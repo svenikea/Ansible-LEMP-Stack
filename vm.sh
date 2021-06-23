@@ -1,16 +1,16 @@
 #! /bin/bash
 
-echo "VM creating script"
-echo "Creating user"
 read -p "Type in the username: " username
-defaultpass="Aa@123456"
-read -p "Type in User Public Key: " user_public_key
+read -p "Paste in User Public Key: " user_public_key
 read -p "The Hostname of this VM: " host_name
 read -p "The Designated IP Address of this VM: " ip
+defaultpass="Aa@123456"
 
 local_config () {
 	sudo useradd -m $username -s /bin/bash
 	sudo echo $defaultpass | passwd $username --stdin
+	sudo mkdir -p /home/$username/.ssh
+	sudo usermod -aG $group $username 
 	sudo echo $user_public_key > /home/$username/.ssh/authorized_keys
 	sudo chown -R $username:$username /home/$username/.ssh
 	sudo chmod 644 /home/$username/.ssh/authorized_keys
@@ -22,16 +22,16 @@ source /etc/os-release
 if [[ $ID == "debian" || $ID == "ubuntu" ]]
 then
 	echo "Detected $PRETTY_NAME which is supported"
+	grou_name="sudo"
 	local_config
-	sudo usermod -aG sudo $username 
 	sudo sed "s/172.16.200.12/$ip/g" -i /etc/netplan/oo-installer-config.yaml
 	sudo netplan apply
 	
 elif [[ $ID == "centos" || $ID == "rhel"  ]]
 then
 	echo "Detected $PRETTY_NAME which is supported"
+	group_name="wheel"
 	local_config
-	sudo usermod -aG wheel $username 
 	sudo sed "s/172.16.200.12/$ip/g" -i /etc/sysconfig/network-scripts/ifcfg-eth0
 	sudo systemctl restart network
 else
