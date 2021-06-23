@@ -11,7 +11,6 @@ read -p "The Designated IP Address of this VM: " ip
 local_config () {
 	sudo useradd -m $username -s /bin/bash
 	sudo echo $defaultpass | passwd $username --stdin
-	sudo usermod -aG sudo $username 
 	sudo echo $user_public_key > /home/$username/.ssh/authorized_keys
 	sudo chown -R $username:$username /home/$username/.ssh
 	sudo chmod 644 /home/$username/.ssh/authorized_keys
@@ -24,6 +23,7 @@ if [[ $ID == "debian" || $ID == "ubuntu" ]]
 then
 	echo "Detected $PRETTY_NAME which is supported"
 	local_config
+	sudo usermod -aG sudo $username 
 	sudo sed "s/172.16.200.12/$ip/g" -i /etc/netplan/oo-installer-config.yaml
 	sudo netplan apply
 	
@@ -31,6 +31,7 @@ elif [[ $ID == "centos" || $ID == "rhel"  ]]
 then
 	echo "Detected $PRETTY_NAME which is supported"
 	local_config
+	sudo usermod -aG wheel $username 
 	sudo sed "s/172.16.200.12/$ip/g" -i /etc/sysconfig/network-scripts/ifcfg-eth0
 	sudo systemctl restart network
 else
