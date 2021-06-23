@@ -9,7 +9,7 @@ read -p "The Hostname of this VM: " host_name
 read -p "The Designated IP Address of this VM: " ip
 
 local_config () {
-	sudo usermod -m $username -s /bin/bash
+	sudo useradd -m $username -s /bin/bash
 	sudo echo $defaultpass | passwd $username --stdin
 	sudo usermod -aG sudo $username 
 	sudo echo $user_public_key > /home/$username/.ssh/authorized_keys
