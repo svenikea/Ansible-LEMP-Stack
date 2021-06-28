@@ -18,26 +18,27 @@ local_config () {
 	sudo sed "s/PasswordAuthentication yes/PasswordAuthentication no/g" -i /etc/ssh/sshd_config
 }
 source /etc/os-release
-
-if [[ $ID == "debian" || $ID == "ubuntu" ]]
-then
-	echo "Detected $PRETTY_NAME which is supported"
-	grou_name="sudo"
-	local_config
-	sudo sed "s/172.16.200.12/$ip/g" -i /etc/netplan/oo-installer-config.yaml
-	sudo netplan apply
-	
-elif [[ $ID == "centos" || $ID == "rhel"  ]]
-then
-	echo "Detected $PRETTY_NAME which is supported"
-	group_name="wheel"
-	local_config
-	sudo sed "s/172.16.200.12/$ip/g" -i /etc/sysconfig/network-scripts/ifcfg-eth0
-	sudo systemctl restart network
-else
-	echo "Unsupported Distribution"
-fi
-
+read "Add new user? [yes(y)/no(n)] " answer
+while [[ $answer == "y" ]]
+do
+	if [[ $ID == "debian" || $ID == "ubuntu" ]]
+	then
+		echo "Detected $PRETTY_NAME which is supported"
+		grou_name="sudo"
+		local_config
+		sudo sed "s/172.16.200.12/$ip/g" -i /etc/netplan/oo-installer-config.yaml
+		sudo netplan apply
+	elif [[ $ID == "centos" || $ID == "rhel"  ]]
+	then
+		echo "Detected $PRETTY_NAME which is supported"
+		group_name="wheel"
+		local_config
+		sudo sed "s/172.16.200.12/$ip/g" -i /etc/sysconfig/network-scripts/ifcfg-eth0
+		sudo systemctl restart network
+	else
+		echo "Unsupported Distribution"
+	fi
+done
 
 sudo systemctl restart sshd 
 sudo systemctl reboot now
