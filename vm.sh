@@ -19,12 +19,12 @@ local_config () {
 }
 source /etc/os-release
 read "Add new user? [yes(y)/no(n)] " answer
-while [[ $answer == "y" || $answer == "yes" ]]
+while [[ $answer == "y" ]]
 do
 	if [[ $ID == "debian" || $ID == "ubuntu" ]]
 	then
 		echo "Detected $PRETTY_NAME which is supported"
-		group_name="sudo"
+		grou_name="sudo"
 		local_config
 		sudo sed "s/172.16.200.12/$ip/g" -i /etc/netplan/oo-installer-config.yaml
 		sudo netplan apply
