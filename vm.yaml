@@ -1,0 +1,23 @@
+# vm.yaml
+---
+  - hosts: server1
+    become: yes
+    tasks:
+      - name: Creating Username
+        user:
+          name: deploy
+          group: wheel
+          home: /home/deploy
+          append: yes
+          shell: /bin/bash
+          password: "{{ 'Aa@123456' | password_hash('sha512') }}"
+          state: present
+        notify: Restart sshd
+      - name: Changing Hostname
+        hostname: 
+          name: deploy
+    handlers:
+      - name: Restart sshd
+        service:
+          name: sshd
+          state: restarted
