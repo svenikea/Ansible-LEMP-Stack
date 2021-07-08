@@ -2,35 +2,31 @@
 ---
   - hosts: server1
     become: yes
+    vars: 
+      UserList: "{{ lookup('file', './roles/webserver/vars/information.json') }}"
     tasks:
-      - name: Creating Username
+      - name: Creating User
         user:
           name: "{{ item.name }}"
-          home: /home/{{ item.name }}
-          append: yes
+          home: "{{ item.home }}"
+          append: "{{ item.append }}"
           group: "{{ item.group }}"
-          shell: /bin/bash
-          password: "{{ 'Aa@123456' | password_hash('sha512') }}"
+          shell: "{{ item.shell }}"
+          password: "{{ item.password | password_hash('sha512') }}"
           state: present
-        notify: Restart sshd
-        with_items: 
-          - { name: 'test1', group: 'wheel' }
-          - { name: 'test2', group: 'wheel' }
-          - { name: 'test3', group: 'wheel' }
-          - { name: 'test4', group: 'wheel' }
-          - { name: 'test5', group: 'wheel' }
-          - { name: 'test6', group: 'wheel' }
-          - { name: 'test7', group: 'wheel' }
-          - { name: 'test8', group: 'wheel' }
-          - { name: 'test9', group: 'wheel' }
-          - { name: 'test10', group: 'wheel' }
-        tags: add-user
-      - name: Changing Hostname
-        hostname: 
-          name: deploy
-        tags: change-host
-    handlers:
-      - name: Restart sshd
-        service:
-          name: sshd
-          state: restarted
+        loop: "{{ UserList.users }}"
+        tags: working
+      - name: Adding User Pub Key
+        authorized_key:
+          user: "{{ item.name }}"
+          state: present
+          key: "{{ item.pubkey }}"
+          validate_certs: false
+          manage_dir: yes
+        
+        loop: "{{ UserList.users }}"
+        tags: adding key
+
+      
+
+
