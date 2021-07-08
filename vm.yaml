@@ -5,17 +5,30 @@
     tasks:
       - name: Creating Username
         user:
-          name: deploy
-          group: wheel
-          home: /home/deploy
+          name: "{{ item.name }}"
+          home: /home/{{ item.name }}
           append: yes
+          group: "{{ item.group }}"
           shell: /bin/bash
           password: "{{ 'Aa@123456' | password_hash('sha512') }}"
           state: present
         notify: Restart sshd
+        with_items: 
+          - { name: 'test1', group: 'wheel' }
+          - { name: 'test2', group: 'wheel' }
+          - { name: 'test3', group: 'wheel' }
+          - { name: 'test4', group: 'wheel' }
+          - { name: 'test5', group: 'wheel' }
+          - { name: 'test6', group: 'wheel' }
+          - { name: 'test7', group: 'wheel' }
+          - { name: 'test8', group: 'wheel' }
+          - { name: 'test9', group: 'wheel' }
+          - { name: 'test10', group: 'wheel' }
+        tags: add-user
       - name: Changing Hostname
         hostname: 
           name: deploy
+        tags: change-host
     handlers:
       - name: Restart sshd
         service:
