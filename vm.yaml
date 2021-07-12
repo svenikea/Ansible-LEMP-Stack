@@ -4,6 +4,7 @@
     become: yes
     vars: 
       UserList: "{{ lookup('file', './roles/webserver/vars/information.json') }}"
+      
     tasks:
       - name: Creating User
         user:
@@ -16,16 +17,13 @@
           state: present
         loop: "{{ UserList.users }}"
         tags: working
-      - name: Adding User Pub Key
-        authorized_key:
-          user: "{{ item.name }}"
-          state: present
-          key: "{{ item.pubkey }}"
-          validate_certs: false
-          manage_dir: yes
-        
+      - name: Adding user key
+        copy:
+          content: "{{ item.pubkey }}"
+          dest: "/home/{{ item.name }}/.ssh/authorized_keys"
+          mode: "0644"
         loop: "{{ UserList.users }}"
-        tags: adding key
+        tags: debug here
 
       
 
