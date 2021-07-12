@@ -1,0 +1,35 @@
+# vm.yaml
+---
+  - hosts: server1
+    become: yes
+    vars: 
+      UserList: "{{ lookup('file', './roles/webserver/vars/information.json') }}"
+    tasks:
+      - name: Creating User
+        user:
+          name: "{{ item.name }}"
+          home: "{{ item.home }}"
+          append: "{{ item.append }}"
+          group: "{{ item.group }}"
+          shell: "{{ item.shell }}"
+          password: "{{ item.password | password_hash('sha512') }}"
+          state: present
+        loop: "{{ UserList.users }}"
+        tags: working
+      - name: Creating Directory
+        file:
+          path: "{{ item.home }}/.ssh"
+          state: directory
+          mode: "1700"
+        loop: "{{ UserList.users }}"
+      - name: Adding user key
+        copy:
+          content: "{{ item.pubkey }}"
+          dest: "/home/{{ item.name }}/.ssh/authorized_keys"
+          mode: "0600"
+        loop: "{{ UserList.users }}"
+        tags: debug here
+
+      
+
+
