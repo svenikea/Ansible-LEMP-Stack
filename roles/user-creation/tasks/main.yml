@@ -1,0 +1,31 @@
+---
+# tasks file for roles/webserver
+
+- name: Creating User
+  user:
+    name: "{{ item.name }}"
+    create_home: yes
+    append: "{{ item.append }}"
+    groups: "{{ item.group }}"
+    shell: "{{ item.shell }}"
+    password: "{{ item.password | password_hash('sha512') }}"
+    state: present
+    loop: "{{ UserList.users }}"
+  tags: Create user
+- name: Creating Directory
+  file:
+    path: "{{ item.home }}/.ssh"
+    state: directory
+    mode: "1700"
+    owner: "{{ item.name }}"
+    group: "{{ item.name }}"
+    loop: "{{ UserList.users }}"
+- name: Adding user key
+  copy:
+    content: "{{ item.pubkey }}"
+    dest: "/home/{{ item.name }}/.ssh/authorized_keys"
+    mode: "0600"
+    owner: "{{ item.name }}"
+    group: "{{ item.name }}"
+    loop: "{{ UserList.users }}"
+  tags: Add key

@@ -1,0 +1,4 @@
+---
+# vars file for roles/webserver
+vars: 
+  - UserList: "{{ lookup('file', 'information.json') }}"
