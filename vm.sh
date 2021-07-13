@@ -6,9 +6,9 @@ source /etc/os-release
 local_config() {		
 	read -p "Type in the username: " username														
 	read -p "Paste in User Public Key: " user_public_key
-	sudo useradd -m $username  -s /bin/bash
+	sudo useradd -m $username  -s /bin/bash -G $group_name
 	sudo mkdir -p /home/$username/.ssh
-	sudo usermod -aG $group_name $username
+#	sudo usermod -aG $group_name $username
 	sudo echo $user_public_key >/home/$username/.ssh/authorized_keys
 	sudo chown -R $username:$username /home/$username/.ssh
 	sudo chmod 644 /home/$username/.ssh/authorized_keys
