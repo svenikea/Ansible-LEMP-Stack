@@ -9,8 +9,9 @@ local_config() {
 	sudo useradd -m $username  -s /bin/bash -G $group_name
 	sudo mkdir -p /home/$username/.ssh
 #	sudo usermod -aG $group_name $username
-	sudo echo $user_public_key >/home/$username/.ssh/authorized_keys
+	sudo echo $user_public_key > /home/$username/.ssh/authorized_keys
 	sudo chown -R $username:$username /home/$username/.ssh
+	sudo chmod 1700 /home/$username/.ssh 
 	sudo chmod 644 /home/$username/.ssh/authorized_keys
 	sudo sed "s/PasswordAuthentication yes/PasswordAuthentication no/g" -i /etc/ssh/sshd_config
 }
