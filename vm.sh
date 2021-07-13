@@ -1,8 +1,10 @@
 #! /bin/bash
 
+# Default variable
 defaultpass="Aa@123456"		
 source /etc/os-release
 
+# User creation process
 local_config() {		
 	read -p "Type in the username: " username														
 	read -p "Paste in User Public Key: " user_public_key
@@ -15,6 +17,8 @@ local_config() {
 	sudo chmod 644 /home/$username/.ssh/authorized_keys
 	sudo sed "s/PasswordAuthentication yes/PasswordAuthentication no/g" -i /etc/ssh/sshd_config
 }
+
+# For APT package management
 apt() {
 	echo "Detected $PRETTY_NAME which is supported"
 	group_name="sudo"
@@ -22,6 +26,8 @@ apt() {
 	sudo echo "$username:$defaultpass" | chpasswd
 
 }
+
+# For YUM package management
 yum() {
 
 	echo "Detected $PRETTY_NAME which is supported"
@@ -31,6 +37,7 @@ yum() {
 
 }
 
+# Keep asking for new user creation until the input is no
 read -p "Do you wish to create new user? (yes[y]/no[n]) " create
 
 if [[ $create == "no" || $create == "n" ]]; then
@@ -48,6 +55,7 @@ else
 	done
 fi
 
+# Finally changing the hostname and ip address corresponding to the ticket
 echo "This session will reboot in order for this to take effect"
 read -p "The Hostname of this VM: " host_name
 read -p "The Designated IP Address of this VM: " ip
@@ -61,5 +69,6 @@ elif [[ $ID == "centos" || $ID == "rhel" ]]; then
 	sudo systemctl restart network
 fi
 
+# After finising all the config this is where the system will reboot it services and itself 
 sudo systemctl restart sshd
 sudo systemctl reboot now
