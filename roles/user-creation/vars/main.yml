@@ -1,4 +1,4 @@
 ---
 # vars file for roles/webserver
-vars: 
-  - UserList: "{{ lookup('file', 'information.json') }}"
+
+UserList: "{{ lookup('file', '../vars/redhat_users.json') }}"

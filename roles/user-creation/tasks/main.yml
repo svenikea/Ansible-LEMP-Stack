@@ -10,22 +10,22 @@
     shell: "{{ item.shell }}"
     password: "{{ item.password | password_hash('sha512') }}"
     state: present
-    loop: "{{ UserList.users }}"
+  loop: "{{ UserList.users }}"
   tags: Create user
 - name: Creating Directory
   file:
     path: "{{ item.home }}/.ssh"
     state: directory
-    mode: "1700"
+    mode: "700"
     owner: "{{ item.name }}"
     group: "{{ item.name }}"
-    loop: "{{ UserList.users }}"
+  loop: "{{ UserList.users }}"
 - name: Adding user key
   copy:
     content: "{{ item.pubkey }}"
     dest: "/home/{{ item.name }}/.ssh/authorized_keys"
-    mode: "0600"
+    mode: "600"
     owner: "{{ item.name }}"
     group: "{{ item.name }}"
-    loop: "{{ UserList.users }}"
+  loop: "{{ UserList.users }}"
   tags: Add key

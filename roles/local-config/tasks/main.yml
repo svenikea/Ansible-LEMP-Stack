@@ -1,0 +1,17 @@
+---
+# tasks file for roles/local-confdig
+
+- name: Changing Hostname
+  hostname: 
+    name: "{{ item.hostname }}"
+  loop: "{{ info.config }}"
+
+- name: Changing IP Address
+  lineinfile:
+    path: /etc/sysconfig/network-scripts/ifcfg-eth0
+    regexp: "IPADDR=172.16.200.12" 
+    line: "IPADDR={{ item.IpAdresss }}"
+    state: "present"
+  loop: "{{ info.config }}"
+      
+  
