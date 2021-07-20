@@ -6,20 +6,46 @@
     name: "{{ item.hostname }}"
   loop: "{{ info.config }}"
 
-- name: Changing IP Address
-  lineinfile:
-    #path: /etc/sysconfig/network-scripts/ifcfg-eth0
-    path: /etc/netplan/00-installer-config.yaml
-    backrefs: yes
-    regexp: '^(\s*)[#]?- 192.168.122.210(: )*' 
-    line: '\1{{ item.IpAdresss }}'
-    state: "present"
-  loop: "{{ info.config }}"
+# Debian
+- block:
+  - name: Changing IP Address
+    lineinfile:
+      path: /etc/netplan/00-installer-config.yaml
+      backrefs: yes
+      regexp: '^(\s*)[#]?- 192.168.122.244(: )*' 
+      line: '\1{{ item.IpAdresss }}'
+      state: "present"
+    loop: "{{ info.config }}"
 
-- name: Changing ssh config
-  lineinfile:
-    path: /etc/ssh/sshd_config
-    regexp: '#PasswordAuthentication yes'
-    line: 'PasswordAuthentication no'
-    state: "present"
-  
+  - name: Changing ssh config
+    lineinfile:
+      path: /etc/ssh/sshd_config
+      regexp: "#PasswordAuthentication yes"
+      line: "PasswordAuthentication no"
+      state: "present"
+  when: ansible_facts['distribution'] == "Ubuntu"
+
+# CentOS
+- block:
+  - name: Changing IP Address
+    lineinfile:
+      path: /etc/sysconfig/network-scripts/ifcfg-eth0
+      backrefs: yes
+      regexp: '^(\s*)[#]?- 192.168.122.244(: )*' 
+      line: '\1{{ item.IpAdresss }}'
+      state: "present"
+    loop: "{{ info.config }}"
+
+  - name: Deleting extra ssh config line
+    lineinfile:
+      path: /etc/ssh/sshd_config
+      regexp: "PasswordAuthentication yes"
+      state: "absent"
+
+  - name: Changing ssh config
+    lineinfile:
+      path: /etc/ssh/sshd_config
+      regexp: '#PasswordAuthentication yes'
+      line: "PasswordAuthentication no"
+      state: "present"  
+  when: ansible_facts['distribution'] == "CentOS"
