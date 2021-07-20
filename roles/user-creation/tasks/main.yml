@@ -11,8 +11,8 @@
     password: "{{ item.password | password_hash('sha512') }}"
     state: present
   loop: "{{ UserList.users }}"
-  tags: Create user
-- name: Creating Directory
+
+- name: Creating ssh directory
   file:
     path: "{{ item.home }}/.ssh"
     state: directory
@@ -20,6 +20,7 @@
     owner: "{{ item.name }}"
     group: "{{ item.name }}"
   loop: "{{ UserList.users }}"
+
 - name: Adding user key
   copy:
     content: "{{ item.pubkey }}"
@@ -28,4 +29,3 @@
     owner: "{{ item.name }}"
     group: "{{ item.name }}"
   loop: "{{ UserList.users }}"
-  tags: Add key

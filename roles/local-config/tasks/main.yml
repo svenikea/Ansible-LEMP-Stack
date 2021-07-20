@@ -8,10 +8,18 @@
 
 - name: Changing IP Address
   lineinfile:
-    path: /etc/sysconfig/network-scripts/ifcfg-eth0
-    regexp: "IPADDR=172.16.200.12" 
-    line: "IPADDR={{ item.IpAdresss }}"
+    #path: /etc/sysconfig/network-scripts/ifcfg-eth0
+    path: /etc/netplan/00-installer-config.yaml
+    backrefs: yes
+    regexp: '^(\s*)[#]?- 192.168.122.210(: )*' 
+    line: '\1{{ item.IpAdresss }}'
     state: "present"
   loop: "{{ info.config }}"
-      
+
+- name: Changing ssh config
+  lineinfile:
+    path: /etc/ssh/sshd_config
+    regexp: '#PasswordAuthentication yes'
+    line: 'PasswordAuthentication no'
+    state: "present"
   

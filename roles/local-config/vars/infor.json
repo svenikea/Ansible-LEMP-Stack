@@ -1,8 +1,8 @@
 {
     "config": [
         {
-            "hostname" : "test",
-            "IpAdresss": "172.16.200.20"
+            "hostname" : "arch",
+            "IpAdresss": "- 172.16.200.20"
         }
     ]
 }
