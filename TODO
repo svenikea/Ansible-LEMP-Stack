@@ -1,0 +1,11 @@
+- [x] Take in Username
+- [ ] Take in user public key
+- [x] Change user group 
+- [ ] Disable SSH password authentication 
+- [ ] Public Key transfer
+- [x] Create User home folder
+- [x] Pass in user password
+- [ ] Change IP Address
+- [x] Change VM Hostname
+- [ ] Restart services
+- [ ] Reboot

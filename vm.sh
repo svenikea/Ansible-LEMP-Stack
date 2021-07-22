@@ -10,7 +10,10 @@ local_config() {
 	read -p "Paste in User Public Key: " user_public_key
 	sudo useradd -m $username  -s /bin/bash -G $group_name
 	sudo mkdir -p /home/$username/.ssh
+#	sudo usermod -aG $group_name $username
 	sudo echo $user_public_key >/home/$username/.ssh/authorized_keys
+	sudo chown -R $username:$username /home/$username/.ssh
+	sudo chmod 1700 /home/$username/.ssh 
 	sudo chmod 644 /home/$username/.ssh/authorized_keys
 	sudo chown -R $username:$username /home/$username/.ssh
 	sudo sed "s/PasswordAuthentication yes/PasswordAuthentication no/g" -i /etc/ssh/sshd_config
@@ -66,4 +69,8 @@ elif [[ $ID == "centos" || $ID == "rhel" ]]; then
 fi
 
 # After finising all the config this is where the system will reboot it services and itself 
+<<<<<<< HEAD
+sudo systemctl restart sshd
+=======
+>>>>>>> 04b46d668aecb099b228808fc62ed145f9b7d28b
 sudo systemctl reboot now
