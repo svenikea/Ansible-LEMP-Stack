@@ -137,3 +137,5 @@ The tasks are separated into different roles, including user-creation and local-
 
 
 ```
+
+* Reverse-Proxy config can load the website config files in JSON format to populate all the config for each websites, playbook can create basic authentoication as an option for secure web server, and finally reload when there's changes or newly config file created
