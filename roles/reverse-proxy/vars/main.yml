@@ -1,0 +1,6 @@
+---
+# vars file for roles/reverse-proxy
+
+server: "{{ lookup('file', '../vars/info.json') }}"
+
+
