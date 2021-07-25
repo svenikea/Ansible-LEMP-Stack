@@ -2,7 +2,7 @@
     "info": [
         {
             "servername" : "website1",
-            "IpAdresss": "54.255.239.164",
+            "IpAdresss": "myipaddress",
             "fulldomainname": "myfulldomain",
             "domainname": "mydomain",
             "basicauthen": "mypassword"
