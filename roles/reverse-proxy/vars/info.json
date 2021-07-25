@@ -1,0 +1,11 @@
+{
+    "info": [
+        {
+            "servername" : "website1",
+            "IpAdresss": "54.255.239.164",
+            "fulldomainname": "myfulldomain",
+            "domainname": "mydomain",
+            "basicauthen": "mypassword"
+        }
+    ]
+}

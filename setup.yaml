@@ -1,0 +1,16 @@
+# vm.yaml
+---
+  - hosts: servers
+    become: yes
+    roles:
+      #- user-creation
+      #- local-config
+  - hosts: cent7-reverse-proxy
+    become: yes 
+    roles:
+      - reverse-proxy
+
+
+      
+
+
