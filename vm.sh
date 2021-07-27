@@ -69,8 +69,4 @@ elif [[ $ID == "centos" || $ID == "rhel" ]]; then
 fi
 
 # After finising all the config this is where the system will reboot it services and itself 
-<<<<<<< HEAD
-sudo systemctl restart sshd
-=======
->>>>>>> 04b46d668aecb099b228808fc62ed145f9b7d28b
 sudo systemctl reboot now
