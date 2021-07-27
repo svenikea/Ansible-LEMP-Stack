@@ -1,0 +1,129 @@
+---
+# tasks file for roles/webserver
+
+# Execute this task when it detect host is Debian
+- name: Installing Debian dependencies
+  apt:
+    name: "{{ item }}"
+    state: latest
+  loop: "{{ DebianDeps }}"
+  tags: install
+
+- name: Starting Nginx Service
+  service:
+    name: nginx
+    state: started
+
+- name: Starting PHP-FPM Service
+  service:
+    name: php7.0-fpm
+    state: started
+
+- name: Starting MYSQL Service
+  service: 
+    name: mysql
+    state: started
+
+- name: Create Website Directory
+  file:
+    path: /var/www/{{ Domain }}
+    state: directory
+    group: root
+    owner: root
+    mode: '755'
+
+- name: Create Nginx Config folder
+  file: 
+    path: /etc/nginx/conf.d/{{ Domain }}
+    state: directory
+    group: root
+    owner: root
+    mode: '755'
+
+- name: Creating Webserver certificate location
+  file:
+    path: /etc/nginx/certs/{{ Domain }}
+    state: directory
+    mode: '644'
+    owner: root
+    group: root
+
+# Generate an OpenSSL private key with the values (4096 bits, RSA)
+- name: Generate Website Private key
+  openssl_privatekey:
+    path: /etc/nginx/certs/{{ Domain }}/{{ Domain }}.key
+    size: 4096
+    type: RSA
+
+# Generate an OpenSSL Certificate Signing Request
+- name: Generate Certificate Signing Request
+  openssl_csr:
+    path: /etc/nginx/certs/{{ Domain }}/{{ Domain }}.csr
+    privatekey_path: /etc/nginx/certs/{{ Domain }}/{{ Domain }}.key
+
+- name: Generate a Self Signed OpenSSL certificate
+  openssl_certificate:
+    path: /etc/nginx/certs/{{ Domain }}/{{ Domain }}_bundle.crt
+    privatekey_path: /etc/nginx/certs/{{ Domain }}/{{ Domain }}.key
+    csr_path: /etc/nginx/certs/{{ Domain }}/{{ Domain }}.csr
+    provider: selfsigned
+
+- name: Creating Wordpress Config File
+  template:
+    src: '../templates/wordpress.j2'
+    dest: '/etc/nginx/conf.d/{{ Domain }}/wordpress.conf'
+
+- name: Editing Nginx Config
+  lineinfile:
+    path: /etc/nginx/nginx.conf
+    backrefs: yes
+    regexp: '^(\s*)[#]?include /etc/nginx/conf.d/;*'
+    line: '\1include /etc/nginx/conf.d/{{ Domain }}/*.conf;'
+    state: "present"
+  notify:
+    - Restart Nginx Config
+
+- name: Set Mysql Root Password
+  mysql_user: 
+    login_host: 'localhost'
+    login_user: "{{ MysqlRootUser }}"
+    login_password: ''
+    name: "{{ MysqlRootUser }}"
+    password: "{{ MysqlRootPassword }}"
+    state: "present"
+
+- name: Set Wordpress Database
+  mysql_db:
+    name: "{{ MysqlDatabase }}"
+    login_user: "{{ MysqlRootUser }}"
+    login_password: "{{ MysqlRootPassword }}"
+    state: "present"
+
+- name: Set Wordpress User
+  mysql_user:
+    login_user: "{{ MysqlRootUser }}"
+    login_password: "{{ MysqlRootPassword }}"
+    name: "{{ MysqlUser }}"
+    password: "{{ MysqlPass }}"
+    state: "present"
+    priv: "{{ MysqlDatabase }}.*:ALL"
+
+- name: Download and Unpack Wordpress
+  unarchive:
+    src: https://wordpress.org/latest.tar.gz
+    dest: /var/www/{{ Domain }}
+    remote_src: yes
+    extra_opts: [--strip-components=1]
+
+- name: Copy Sample Config
+  command: mv /var/www/{{ Domain }}/wp-config-sample.php /var/www/{{ Domain }}/wp-config.php
+
+- name: Update Wordpress Config FIle
+  lineinfile: 
+    path: /var/www/{{ Domain }}/wp-config.php
+    regexp: "{{ item.regexp }}"
+    line: "{{ item.line }}"
+  with_items:
+    - {'regexp': "define\\( 'DB_NAME', '(.)+' \\);", 'line': "define( 'DB_NAME', '{{ MysqlDatabase }}' );"}
+    - {'regexp': "define\\( 'DB_USER', '(.)+' \\);", 'line': "define( 'DB_USER', '{{ MysqlUser }}' );"}
+    - {'regexp': "define\\( 'DB_PASSWORD', '(.)+' \\);", 'line': "define( 'DB_PASSWORD', '{{ MysqlPass }}' );"}

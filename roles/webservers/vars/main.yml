@@ -1,0 +1,12 @@
+---
+# vars file for roles/webserver
+
+Domain: "wordpress-lab"
+ServerName: "wordpress-lab.com"
+DebianDeps: [ 'nginx' , 'mysql-server' , 'python-mysqldb',  'curl' , 'php-fpm' , 'php-mysql' , 'php-curl' , 'php-gd' , 'php-intl' , 'php-mbstring' , 'php-soap' , 'php-xml' , 'php-xmlrpc' , 'php-zip' ]
+MysqlUser: "mysql"
+MysqlPass: "123"
+MysqlDatabase: "wordpress"
+MysqlRootDatabase: "mysql"
+MysqlRootUser: "root"
+MysqlRootPassword: "root"

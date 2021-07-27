@@ -2,9 +2,16 @@
     "info": [
         {
             "servername" : "website1",
-            "IpAdresss": "myipaddress",
-            "fulldomainname": "myfulldomain",
-            "domainname": "mydomain",
+            "IpAdresss": "54.255.218.239",
+            "fulldomainname": "cloud-guru.com",
+            "domainname": "cloud-guru",
+            "basicauthen": "mypassword"
+        },
+        {
+            "servername" : "website2",
+            "IpAdresss": "54.255.212.105",
+            "fulldomainname": "cloud-guru.com",
+            "domainname": "cloud-guru",
             "basicauthen": "mypassword"
         }
     ]

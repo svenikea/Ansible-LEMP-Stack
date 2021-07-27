@@ -12,6 +12,7 @@
     name: 
       - nginx
       - httpd-tools
+      - python2-cryptography
     state: latest
   tags: nginx
 
@@ -21,16 +22,17 @@
     state: started
   tags: start service
 
-- name: Creating configuration location
+- name: Creating Webserver certificate location
   file:
-    path: /etc/nginx/conf.d/{{ server.info[0].fulldomainname }}
+    path: /etc/nginx/certs/{{ item.fulldomainname }}
     state: directory
     mode: '644'
     owner: root
     group: root
-  tags: website config directory 
-
-- name: Creating certificate location
+  loop: "{{ server.info }}"
+  tags: Website certs
+  
+- name: Creating Authentication Folder
   file:
     path: /etc/nginx/authentication
     state: directory
@@ -43,7 +45,39 @@
   shell: "htpasswd -c -b /etc/nginx/authentication/.htpasswd.{{ item.servername }}.{{ item.fulldomainname }} {{ item.servername }} {{ item.basicauthen }}"
   loop: "{{ server.info }}"
   tags: shell
- 
+
+# Generate an OpenSSL private key with the values (4096 bits, RSA)
+- name: Generate Website Private key
+  openssl_privatekey:
+    path: /etc/nginx/certs/{{ fulldomain }}/{{ domain }}.key
+    size: 4096
+    type: RSA
+  tags: private key
+
+# Generate an OpenSSL Certificate Signing Request
+- name: Generate Certificate Signing Request
+  openssl_csr:
+    path: /etc/nginx/certs/{{ fulldomain }}/{{ domain }}.csr
+    privatekey_path: /etc/nginx/certs/{{ fulldomain }}/{{ domain }}.key
+  tags: csr
+
+- name: Generate a Self Signed OpenSSL certificate
+  openssl_certificate:
+    path: /etc/nginx/certs/{{ fulldomain }}/{{ domain }}_bundle.crt
+    privatekey_path: /etc/nginx/certs/{{ fulldomain }}/{{ domain }}.key
+    csr_path: /etc/nginx/certs/{{ fulldomain }}/{{ domain }}.csr
+    provider: selfsigned
+  tags: ssl
+
+- name: Creating configuration location
+  file:
+    path: /etc/nginx/conf.d/{{ fulldomain }}
+    state: directory
+    mode: '644'
+    owner: root
+    group: root
+  tags: website config directory 
+  
 - name: Copying configuration
   template:
     src: '../templates/reverse.j2'
@@ -51,15 +85,22 @@
   loop: "{{ server.info }}"
   tags: copy
   
-
 - name: Edit Configuration
   lineinfile:
     path: /etc/nginx/nginx.conf
     backrefs: yes
     regexp: '^(\s*)[#]?include /etc/nginx/conf.d/;*'
-    line: '\1include /etc/nginx/conf.d/{{ server.info[0].fulldomainname }}/*.conf;'
+    line: '\1include /etc/nginx/conf.d/{{ fulldomain }}/*.conf;'
     state: "present"
   changed_when: true
   notify: 
    - Restarting Reverse-Proxy
   tags: editing config
+
+
+# For Debugging the code  
+- name: debug
+  debug:
+    msg: "{{ item }}"
+  loop: "{{ server.info }}"
+  tags: debug
