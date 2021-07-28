@@ -1,0 +1,24 @@
+- name: Create Website Directory
+  file:
+    path: /var/www/html/{{ Domain }}
+    state: directory
+    group: root
+    owner: root
+    mode: '755'
+
+- name: Create Nginx Config folder
+  file: 
+    path: /etc/nginx/conf.d/{{ Domain }}
+    state: directory
+    group: root
+    owner: root
+    mode: '755'
+
+- name: Creating Webserver certificate location
+  file:
+    path: /etc/nginx/certs/{{ Domain }}
+    state: directory
+    mode: '644'
+    owner: root
+    group: root
+- 

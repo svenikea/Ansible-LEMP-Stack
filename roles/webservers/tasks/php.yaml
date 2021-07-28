@@ -1,0 +1,5 @@
+- name: Installing Php Modules
+  apt: 
+    name: "{{ item }}"
+    state: "latest"
+  loop: "{{ PhpDeps }}"

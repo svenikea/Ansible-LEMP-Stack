@@ -1,0 +1,19 @@
+# Generate an OpenSSL private key with the values (4096 bits, RSA)
+- name: Generate Website Private key
+  openssl_privatekey:
+    path: /etc/nginx/certs/{{ Domain }}/{{ Domain }}.key
+    size: 4096
+    type: RSA
+
+# Generate an OpenSSL Certificate Signing Request
+- name: Generate Certificate Signing Request
+  openssl_csr:
+    path: /etc/nginx/certs/{{ Domain }}/{{ Domain }}.csr
+    privatekey_path: /etc/nginx/certs/{{ Domain }}/{{ Domain }}.key
+
+- name: Generate a Self Signed OpenSSL certificate
+  openssl_certificate:
+    path: /etc/nginx/certs/{{ Domain }}/{{ Domain }}_bundle.crt
+    privatekey_path: /etc/nginx/certs/{{ Domain }}/{{ Domain }}.key
+    csr_path: /etc/nginx/certs/{{ Domain }}/{{ Domain }}.csr
+    provider: selfsigned

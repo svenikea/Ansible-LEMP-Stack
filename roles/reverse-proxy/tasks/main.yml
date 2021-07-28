@@ -44,7 +44,7 @@
 - name: Generate Basic Authen
   shell: "htpasswd -c -b /etc/nginx/authentication/.htpasswd.{{ item.servername }}.{{ item.fulldomainname }} {{ item.servername }} {{ item.basicauthen }}"
   loop: "{{ server.info }}"
-  tags: shell
+  tags: authen
 
 # Generate an OpenSSL private key with the values (4096 bits, RSA)
 - name: Generate Website Private key
@@ -81,7 +81,7 @@
 - name: Copying configuration
   template:
     src: '../templates/reverse.j2'
-    dest: '/etc/nginx/conf.d/{{ item.fulldomainname }}/{{ item.domainname }}.{{ item.fulldomainname }}.conf'
+    dest: '/etc/nginx/conf.d/{{ item.fulldomainname }}/{{ item.domainname }}.{{ item.servername }}.conf'
   loop: "{{ server.info }}"
   tags: copy
   

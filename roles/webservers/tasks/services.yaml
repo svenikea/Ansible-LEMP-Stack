@@ -1,0 +1,27 @@
+- name: Starting Nginx Service
+  service:
+    name: nginx
+    state: started
+- name: Ubuntu PHP-FPM
+  block:
+    - name: Starting PHP-FPM Service
+      service:
+        name: php7.2-fpm
+        state: started
+  when: ansible_distribution == "Ubuntu"
+
+- name: Debian PHP-FPM
+  block:
+    - name: Starting PHP-FPM Service
+      service:
+        name: php7.0-fpm
+        state: started
+  when: ansible_distribution == "Debian"
+
+- name: Starting MYSQL Service
+  service: 
+    name: mysql
+    state: started
+
+- name: Reload Nginx Config
+  shell: nginx -s reload

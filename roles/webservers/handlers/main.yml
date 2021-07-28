@@ -3,3 +3,8 @@
 
 - name: Restart Nginx Config
   shell: nginx -s reload
+
+- name: Restart Nginx Service
+  service: 
+    name: nginx
+    state: restarted

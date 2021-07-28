@@ -1,5 +1,5 @@
 server {
-    listen       80;
+    listen 80 default_server;
     server_name  {{ ServerName }};
     return 301 https://$server_name$request_uri;
 }
@@ -7,7 +7,7 @@ server {
 server {
 	listen 443 ssl http2;
 	server_name {{ ServerName }};
-    root   /var/www/{{ Domain }};
+    root   /var/www/html/{{ Domain }};
 	ssl_certificate /etc/nginx/certs/{{ Domain }}/{{ Domain }}_bundle.crt;
 	ssl_certificate_key /etc/nginx/certs/{{ Domain }}/{{ Domain }}.key;
     	location / {
@@ -17,7 +17,7 @@ server {
     	location ~ \.php$ {
         	include fastcgi_params;
     		fastcgi_keep_conn on;
-        	fastcgi_pass   unix:/var/run/php/php7.0-fpm.sock;
+        	fastcgi_pass   {{ UbuntuPHPFPM }};
         	fastcgi_index  index.php;
 		fastcgi_buffers 8 16k;
 		fastcgi_buffer_size 32k;

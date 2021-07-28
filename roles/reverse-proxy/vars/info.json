@@ -1,18 +1,18 @@
 {
     "info": [
         {
-            "servername" : "website1",
-            "IpAdresss": "54.255.218.239",
+            "servername" : "wordpress-lab.com",
+            "IpAdresss": "18.141.234.18",
             "fulldomainname": "cloud-guru.com",
             "domainname": "cloud-guru",
-            "basicauthen": "mypassword"
+            "basicauthen": "123"
         },
         {
-            "servername" : "website2",
-            "IpAdresss": "54.255.212.105",
+            "servername" : "website2.com",
+            "IpAdresss": "54.169.179.248",
             "fulldomainname": "cloud-guru.com",
             "domainname": "cloud-guru",
-            "basicauthen": "mypassword"
+            "basicauthen": "123"
         }
     ]
 }

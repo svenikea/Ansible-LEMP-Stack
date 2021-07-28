@@ -1,0 +1,31 @@
+- name: Installing MySQL and MySQL dependencies
+  apt:
+    name: "{{ item }}"
+    state: "latest"
+  loop: "{{ MysqlDeps }}"
+
+- name: Set Mysql Root Password
+  mysql_user: 
+    login_user: "{{ MysqlRootUser }}"
+    login_password: "{{ MysqlRootPassword }}"
+    name: "{{ MysqlRootUser }}"
+    password: "{{ MysqlRootPassword }}"
+
+
+- name: Set Wordpress User
+  mysql_user:
+    login_user: "{{ MysqlRootUser }}"
+    login_password: "{{ MysqlRootPassword }}"
+    name: "{{ MysqlUser }}"
+    password: "{{ MysqlPass }}"
+    priv: "{{ MysqlDatabase }}.*:ALL"
+    state: present
+    #priv: "*.*:ALL"
+
+- name: Set Wordpress Database
+  mysql_db:
+    name: "{{ MysqlDatabase }}"
+    login_user: "{{ MysqlRootUser }}"
+    login_password: "{{ MysqlRootPassword }}"
+    state: "present"
+

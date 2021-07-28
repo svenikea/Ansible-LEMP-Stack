@@ -1,0 +1,7 @@
+- name: "Installing Dependencies"
+  apt: 
+    name: "{{ item }}"
+    state: "latest"
+  loop: "{{ Dependencies }}"
+  tags: Installing dependencies
+  

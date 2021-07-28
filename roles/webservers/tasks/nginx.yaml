@@ -1,0 +1,35 @@
+- name: Installing Nginx 
+  apt: 
+    name: nginx
+    state: "latest"
+  
+- name: Copying Ubuntu template
+  block:
+  - name: Creating Wordpress Config File
+    template:
+      src: '../templates/ubuntu-wordpress.j2'
+      dest: '/etc/nginx/conf.d/{{ Domain }}/{{ Domain }}.conf'
+  when: ansible_distribution == "Ubuntu"
+
+- name: Copying Debian template
+  block:
+  - name: Creating Wordpress Config File
+    template:
+      src: '../templates/debian-wordpress.j2'
+      dest: '/etc/nginx/conf.d/{{ Domain }}/{{ Domain }}.conf'
+  when: ansible_distribution == "Debian"
+
+- name: Delete Default webspage
+  file:
+    path: /etc/nginx/sites-enabled/default
+    state: "absent"
+
+- name: Editing Nginx Config
+  lineinfile:
+    path: /etc/nginx/nginx.conf
+    backrefs: yes
+    regexp: '^(\s*)[#]?include /etc/nginx/conf.d/;*'
+    line: '\1include /etc/nginx/conf.d/{{ Domain }}/*.conf;'
+    state: "present"
+  notify:
+    - Restart Nginx Config

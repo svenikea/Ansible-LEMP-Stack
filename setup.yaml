@@ -1,14 +1,15 @@
 # vm.yaml
 ---
-  - hosts: servers
-    become: yes
-    roles:
+- hosts: wordpress-server
+  become: yes
+  roles:
       #- user-creation
       #- local-config
-  - hosts: cent7-reverse-proxy
-    become: yes 
-    roles:
-      - reverse-proxy
+    - webservers
+  #- hosts: reverse-proxy
+  #  become: yes 
+  #  roles:
+  #    - reverse-proxy
 
 
       

@@ -3,7 +3,17 @@
 
 Domain: "wordpress-lab"
 ServerName: "wordpress-lab.com"
-DebianDeps: [ 'nginx' , 'mysql-server' , 'python-mysqldb',  'curl' , 'php-fpm' , 'php-mysql' , 'php-curl' , 'php-gd' , 'php-intl' , 'php-mbstring' , 'php-soap' , 'php-xml' , 'php-xmlrpc' , 'php-zip' ]
+
+Dependencies: [ 'python-openssl' , 'python-openssl', 'curl' ]
+
+PhpDeps: [ 'php-curl', 'php-fpm' , 'php-mysql' , 'php-curl' , 'php-gd' , 'php-intl' , 'php-mbstring' , 'php-soap' , 'php-xml' , 'php-xmlrpc' , 'php-zip' ]
+MysqlDeps: [ 'mysql-server' , 'python-mysqldb' ]
+
+DebianPHPFPM: "unix:/var/run/php/php7.0-fpm.sock"
+UbuntuPHPFPM: "unix:/var/run/php/php7.2-fpm.sock"
+ 
+
+
 MysqlUser: "mysql"
 MysqlPass: "123"
 MysqlDatabase: "wordpress"

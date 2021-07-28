@@ -1,0 +1,29 @@
+- name: Download and Unpack Wordpress
+  unarchive:
+    src: https://wordpress.org/latest.tar.gz
+    dest: /var/www/html/{{ Domain }}
+    validate_certs: no
+    remote_src: yes
+    extra_opts: [--strip-components=1]
+
+- name: Set Site permission
+  file:
+    path: /var/www
+    mode: '755'
+    owner: 'www-data'
+    group: www-data
+    state: directory
+    recurse: yes
+
+- name: Copy Sample Config
+  command: mv /var/www/html/{{ Domain }}/wp-config-sample.php /var/www/html/{{ Domain }}/wp-config.php creates=/var/www/html/{{ Domain }}/wp-config.php
+
+- name: Update Wordpress Config FIle
+  lineinfile: 
+    path: /var/www/html/{{ Domain }}/wp-config.php
+    regexp: "{{ item.regexp }}"
+    line: "{{ item.line }}"
+  with_items:
+    - {'regexp': "define\\( 'DB_NAME', '(.)+' \\);", 'line': "define( 'DB_NAME', '{{ MysqlDatabase }}' );"}
+    - {'regexp': "define\\( 'DB_USER', '(.)+' \\);", 'line': "define( 'DB_USER', '{{ MysqlUser }}' );"}
+    - {'regexp': "define\\( 'DB_PASSWORD', '(.)+' \\);", 'line': "define( 'DB_PASSWORD', '{{ MysqlPass }}' );"}
