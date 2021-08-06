@@ -4,4 +4,4 @@ roles/local-config/vars/*.json
 roles/reverse-proxy/vars/*.json
 roles/reverse-proxy/templates/project.j2
 roles/ user-creation/vars/*.json
-roles/webservers/
+roles/webservers/*
