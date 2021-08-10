@@ -1,8 +1,0 @@
-{
-    "config": [
-        {
-            "hostname" : "arch",
-            "IpAdresss": "172.16.200.20"
-        }
-    ]
-}

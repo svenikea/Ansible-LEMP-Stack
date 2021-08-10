@@ -1,0 +1,4 @@
+TODO
+inventory/vm-cloud.ini
+inventory/vm-local.ini
+ansible.cfg

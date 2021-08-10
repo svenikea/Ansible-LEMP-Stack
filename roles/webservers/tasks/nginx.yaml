@@ -1,24 +1,61 @@
-- name: Installing Nginx 
-  apt: 
-    name: nginx
-    state: "latest"
-  
-- name: Copying Ubuntu template
+- name: Installing Nginx
   block:
-  - name: Creating Wordpress Config File
-    template:
-      src: '../templates/ubuntu-wordpress.j2'
-      dest: '/etc/nginx/conf.d/{{ Domain }}/{{ Domain }}.conf'
-  when: ansible_distribution == "Ubuntu"
+  - name: Install Ubuntu Debian Nginx
+    apt:
+      name:
+        - nginx
+      state: latest
+  - name: Create Website Directory
+    file:
+      path: /var/www/html/{{ Domain }}
+      state: directory
+      group: '82'
+      owner: 'www-data'
+      mode: '700'
+  when: ansible_distribution == "Ubuntu" or ansible_distribution == "Debian"
 
-- name: Copying Debian template
+- name: Installing Nginx
   block:
-  - name: Creating Wordpress Config File
-    template:
-      src: '../templates/debian-wordpress.j2'
-      dest: '/etc/nginx/conf.d/{{ Domain }}/{{ Domain }}.conf'
-  when: ansible_distribution == "Debian"
+  - name: Install CentOS Nginx
+    yum:
+      name:
+        - nginx
+      state: latest
+    tags: debug here
+  - name: Create Website Directory
+    file:
+      path: /var/www/html/{{ Domain }}
+      state: directory
+      group: 'nginx'
+      owner: 'nginx'
+      mode: '700'
+  when: ansible_distribution == "CentOS" 
 
+- name: Create Nginx Config folder
+  file: 
+    path: /etc/nginx/conf.d/{{ Domain }}
+    state: directory
+    group: root
+    owner: root
+    mode: '755'
+
+- name: Creating Webserver certificate location
+  file:
+    path: /etc/nginx/certs/{{ Domain }}
+    state: directory
+    mode: '644'
+    owner: root
+    group: root
+
+
+- name: Creating Wordpress Config File
+  template:
+    src: '../templates/wordpress.j2'
+    dest: '/etc/nginx/conf.d/{{ Domain }}/{{ Domain }}.conf'
+- name: Nginx Default COnfig File
+  template:
+    src: '../templates/nginx.j2'
+    dest: '/etc/nginx/nginx.conf'
 - name: Delete Default webspage
   file:
     path: /etc/nginx/sites-enabled/default
