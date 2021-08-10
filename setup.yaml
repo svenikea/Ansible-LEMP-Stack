@@ -1,16 +1,9 @@
 # vm.yaml
 ---
-# - hosts: project
-#   become: yes
-#   roles:
-#     - user-creation
-#     - local-config
-#    - webservers
-- hosts: wordpress-server
+- hosts: project
   become: yes
   roles:
-   - webservers
-
+    - webservers
 
       
 
