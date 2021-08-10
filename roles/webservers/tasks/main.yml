@@ -5,13 +5,18 @@
 
 
 - include: installing-deps.yaml
-- include: php.yaml
-- include: create-folder.yaml
-- include: mysql.yaml
-- include: ssl.yaml
-- include: wordpress.yaml
 - include: nginx.yaml
+- include: ssl.yaml
+- include: php.yaml
+- include: mysql.yaml
+- include: wordpress.yaml
 - include: services.yaml
+
+
+
+# - name: MYSQL password
+#   debug: 
+#     msg: "{{ loginfact }}"
 
 
 

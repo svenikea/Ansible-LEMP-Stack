@@ -1,5 +1,59 @@
-- name: Installing Php Modules
+- name: Installing CentOS PHP modules
+  yum: 
+    name: "{{ item }}"
+    state: "latest"
+    enablerepo: "remi-php72"
+  loop: "{{ CentOSPhpDeps }}"
+  when: ansible_distribution == "CentOS"
+
+- name: Installing Debian and Ubuntu PHP modules
   apt: 
     name: "{{ item }}"
     state: "latest"
-  loop: "{{ PhpDeps }}"
+  loop: "{{ DebianPhpDeps }}"
+  when: ansible_distribution == "Ubuntu" or ansible_distribution == "Debian"
+
+- name: PHP-FPM
+  block:
+  - name: Starting Ubuntu PHP-FPM Service
+    service:
+      name: php7.2-fpm
+      state: started
+    when: ansible_distribution == "Ubuntu"
+  - name: Starting Debian PHP-FPM Service
+    service:
+      name: php7.0-fpm
+      tate: started
+    when: ansible_distribution == "Debian"
+
+- name: CentOS PHP-FPM Pre-Config
+  block:
+  - name: PHP-FPM Configuration
+    lineinfile:
+      path: "/etc/php-fpm.d/www.conf"
+      regexp: "{{ item.regexp }}"
+      line: "{{ item.line }}"
+      state: "present"
+    with_items:
+      - {'regexp': "user = apache", 'line': "user = nginx"}
+      - {'regexp': "group = apache", 'line': "group = nginx"}
+      - {'regexp': "listen = 127.0.0.1:9000", 'line': "listen = /run/php-fpm/www.sock"}
+      - {'regexp': ";listen.owner = nobody", 'line': ";listen.owner = nginx"}
+      - {'regexp': ";listen.group = nobody", 'line': ";listen.group = nginx"}
+  - name: Change /var/lib/php Ownership
+    file:
+      path: /var/lib/php
+      owner: root
+      group: nginx
+      state: directory
+      recurse: yes
+  - name: Starting CentOS PHP-FPM Service
+    service:
+      name: php-fpm
+      state: started
+  - name: Change PHP-FPM Socket Ownership
+    file:
+      path: /var/run/php-fpm/www.sock
+      owner: nginx
+      group: nginx
+  when: ansible_distribution == "CentOS"

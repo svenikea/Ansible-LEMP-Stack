@@ -1,31 +1,104 @@
-- name: Installing MySQL and MySQL dependencies
-  apt:
-    name: "{{ item }}"
-    state: "latest"
-  loop: "{{ MysqlDeps }}"
+- name: MySQL 
+  block:
+  - name: Installing Ubuntu and Debian MySQL
+    apt:
+      name: "{{ item }}"
+      state: "latest"
+    loop: "{{ DebianMysqlDeps }}"
+    when: ansible_distribution == "Ubuntu" or ansible_distribution == "Debian"
 
-- name: Set Mysql Root Password
-  mysql_user: 
-    login_user: "{{ MysqlRootUser }}"
-    login_password: "{{ MysqlRootPassword }}"
-    name: "{{ MysqlRootUser }}"
-    password: "{{ MysqlRootPassword }}"
+  - name: Installing CentOS MySQL
+    yum:
+      name: "{{ item }}"
+      state: "latest"
+    loop: "{{ CentOSMysqlDeps }}"
+    when: ansible_distribution == "CentOS"
 
+- name: Starting MYSQL Service
+  block: 
+  - name: Starting Ubuntu and Debian MySQL Service
+    service: 
+      name: mysql
+      state: started
+    when: ansible_distribution == "Ubuntu" or ansible_distribution == "Debian"
 
-- name: Set Wordpress User
-  mysql_user:
-    login_user: "{{ MysqlRootUser }}"
-    login_password: "{{ MysqlRootPassword }}"
-    name: "{{ MysqlUser }}"
-    password: "{{ MysqlPass }}"
-    priv: "{{ MysqlDatabase }}.*:ALL"
-    state: present
-    #priv: "*.*:ALL"
+  - name: Starting CentOS MySQL Service
+    service: 
+      name: mysqld
+      state: started
+    when: ansible_distribution == "CentOS"
 
-- name: Set Wordpress Database
-  mysql_db:
-    name: "{{ MysqlDatabase }}"
-    login_user: "{{ MysqlRootUser }}"
-    login_password: "{{ MysqlRootPassword }}"
-    state: "present"
+- name: MySQL Configuration
+  block:
+  - name: Set MySQL Root Password
+    mysql_user: 
+      login_user: "{{ MysqlRootUser }}"
+      login_password: "{{ MysqlRootPassword }}"
+      name: "{{ MysqlRootUser }}"
+      password: "{{ MysqlRootPassword }}"
+      
+  - name: Set Wordpress User
+    mysql_user:
+      login_user: "{{ MysqlRootUser }}"
+      login_password: "{{ MysqlRootPassword }}"
+      name: "{{ MysqlUser }}"
+      password: "{{ MysqlPass }}"
+      priv: "{{ MysqlDatabase }}.*:ALL"
+      state: present
+      #priv: "*.*:ALL"
 
+  - name: Set Wordpress Database
+    mysql_db:
+      name: "{{ MysqlDatabase }}"
+      login_user: "{{ MysqlRootUser }}"
+      login_password: "{{ MysqlRootPassword }}"
+      state: "present"
+
+  when: ansible_distribution == "Ubuntu" or ansible_distribution == "Debian"
+
+- name: MySQL Setup
+  block:
+  - name: Get MySQL Temporary Password
+    shell:  'grep password /var/log/mysqld.log | cut -d ":" -f4 | tr " " ":" | cut -d ":" -f2'
+    register: DefaultPass
+  - name: Copy CNF file
+    template:
+      src: ../templates/mysqld.j2
+      dest: /root/.my.cnf
+      owner: root
+      group: root
+      mode: '700'
+  - name: Restarting CentOS MySQL Service
+    service: 
+      name: mysqld
+      state: restarted
+  - name: Set new password from temporary password
+    command: 'mysql -e "SET PASSWORD = PASSWORD(''{{ DefaultPass.stdout }}'');" --connect-expired-password -uroot -p"{{ DefaultPass.stdout }}"'
+  - name: Set Password Fact
+    set_fact:
+      loginfact: "{{ DefaultPass.stdout }}"
+  - name: Set MySQL Root Password
+    mysql_user: 
+      login_user: "{{ MysqlRootUser }}"
+      login_password: "{{ DefaultPass.stdout }}"
+      name: "{{ MysqlRootUser }}"
+      password: "{{ MysqlRootPassword }}"
+
+  - name: Set Wordpress Database
+    mysql_db:
+      name: "{{ MysqlDatabase }}"
+      login_user: "{{ MysqlRootUser }}"
+      login_password: "{{ MysqlRootPassword }}"
+      state: "present"
+
+  - name: Set Wordpress User
+    mysql_user:
+      login_user: "{{ MysqlRootUser }}"
+      login_password: "{{ MysqlRootPassword }}"
+      name: "{{ MysqlUser }}"
+      password: "{{ MysqlPass }}"
+      priv: "{{ MysqlDatabase }}.*:ALL"
+      state: present
+      #priv: "*.*:ALL"
+
+  when: ansible_distribution == "CentOS" 
