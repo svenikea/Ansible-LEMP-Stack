@@ -9,3 +9,16 @@ This is a Wordpress LEMP Stack deployment script for use with Ubuntu, Debian and
 * Enable TLS/SSL connection
 * Setup new MySQL, PHP-FPM configuration
 * Download and unpacking Wordpress to ```/var/www/html```
+
+## Variables
+
+> To chage the way ansible run and setup WordPress use the following variable 
+
+```yml
+MysqlUser: "mysql"
+MysqlPass: "123"
+MysqlDatabase: "wordpress"
+MysqlRootUser: "root"
+MysqlRootPassword: "root"
+BodySize: 100M
+```

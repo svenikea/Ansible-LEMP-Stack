@@ -20,12 +20,23 @@
       name: php7.2-fpm
       state: started
     when: ansible_distribution == "Ubuntu"
+  - name: Change PHP-FPM Upload Size
+    lineinfile:
+      path: /etc/php/7.2/fpm/php.ini
+      regexp: "{{ item.regexp }}"
+      line: "{{ item.line }}"
+      state: "present"
+    with_items:
+      - { "regexp" : "post_max_size =", "line" : "post_max_size = {{ BodySize }}" }
+      - { "regexp" : "upload_max_filesize =", "line" : "upload_max_filesize = {{ BodySize }}" }
+    notify: Restart PHP-FPM Service
+    when: ansible_distribution == "Ubuntu"
   - name: Starting Debian PHP-FPM Service
     service:
       name: php7.0-fpm
       tate: started
     when: ansible_distribution == "Debian"
-
+  
 - name: CentOS PHP-FPM Pre-Config
   block:
   - name: PHP-FPM Configuration
@@ -38,8 +49,8 @@
       - {'regexp': "user = apache", 'line': "user = nginx"}
       - {'regexp': "group = apache", 'line': "group = nginx"}
       - {'regexp': "listen = 127.0.0.1:9000", 'line': "listen = /run/php-fpm/www.sock"}
-      - {'regexp': ";listen.owner = nobody", 'line': ";listen.owner = nginx"}
-      - {'regexp': ";listen.group = nobody", 'line': ";listen.group = nginx"}
+      - {'regexp': ";listen.owner = nobody", 'line': "listen.owner = nginx"}
+      - {'regexp': ";listen.group = nobody", 'line': "listen.group = nginx"}
   - name: Change /var/lib/php Ownership
     file:
       path: /var/lib/php
@@ -51,9 +62,14 @@
     service:
       name: php-fpm
       state: started
-  - name: Change PHP-FPM Socket Ownership
-    file:
-      path: /var/run/php-fpm/www.sock
-      owner: nginx
-      group: nginx
+  - name: Change PHP-FPM Upload Size
+    lineinfile:
+      path: /etc/php.ini
+      regexp: "{{ item.regexp }}"
+      line: "{{ item.line }}"
+      state: "present"
+    with_items:
+      - { "regexp" : "post_max_size =", "line" : "post_max_size = {{ BodySize }}" }
+      - { "regexp" : "upload_max_filesize =", "line" : "upload_max_filesize = {{ BodySize }}" }
+    notify: Restart PHP-FPM Service
   when: ansible_distribution == "CentOS"

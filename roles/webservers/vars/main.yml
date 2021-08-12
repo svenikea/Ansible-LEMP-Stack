@@ -6,12 +6,12 @@ ServerName: "wordpress-lab.com"
 
 DebianDependencies: [ 'python-openssl' , 'curl' ]
 DebianPhpDeps: [ 'php-curl', 'php-fpm' , 'php-mysql' , 'php-curl' , 'php-gd' , 'php-intl' , 'php-mbstring' , 'php-soap' , 'php-xml' , 'php-xmlrpc' , 'php-zip' ]
-DebianMysqlDeps: [ 'mysql-server' , 'python-mysqldb' ]
+DebianMysqlDeps: [ 'mysql-server' , 'python-mysqldb', ' python3-mysqldb' ]
 
 
-CentOSDependencies: [ 'pyOpenSSL' , 'curl', 'python2-cryptography', 'epel-release' ,'yum-utils', 'http://rpms.remirepo.net/enterprise/remi-release-7.rpm', 'https://dev.mysql.com/get/mysql57-community-release-el7-11.noarch.rpm' ]   
+CentOSDependencies: [ 'pyOpenSSL' , 'curl', 'python2-cryptography', 'epel-release' ,'yum-utils', 'python36-pyOpenSSL', 'python36-crypto', 'http://rpms.remirepo.net/enterprise/remi-release-7.rpm', 'https://dev.mysql.com/get/mysql57-community-release-el7-11.noarch.rpm' ]   
 CentOSPhpDeps : [ 'php-cli', 'php-fpm', 'php-mysql', 'php-json', 'php-opcache', 'php-mbstring', 'php-xml', 'php-gd', 'php-curl']
-CentOSMysqlDeps : [ 'mysql-community-server', 'MySQL-python' ]
+CentOSMysqlDeps : [ 'mysql-community-server', 'MySQL-python', 'python36-mysql' ]
 DebianPHPFPM: "unix:/var/run/php/php7.0-fpm.sock"
 CentOSPHPFPM: "unix:/var/run/php-fpm/www.sock"
 UbuntuPHPFPM: "unix:/var/run/php/php7.2-fpm.sock"
