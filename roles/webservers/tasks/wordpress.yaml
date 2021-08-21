@@ -1,17 +1,17 @@
 - name: Download and Unpack Wordpress
   unarchive:
     src: https://wordpress.org/latest.tar.gz
-    dest: /var/www/html/{{ Domain }}
+    dest: /var/www/html/{{ domain }}
     validate_certs: no
     remote_src: yes
     extra_opts: [--strip-components=1]
 
 - name: Copy Sample Config
-  command: mv /var/www/html/{{ Domain }}/wp-config-sample.php /var/www/html/{{ Domain }}/wp-config.php creates=/var/www/html/{{ Domain }}/wp-config.php
+  command: mv /var/www/html/{{ domain }}/wp-config-sample.php /var/www/html/{{ domain }}/wp-config.php creates=/var/www/html/{{ domain }}/wp-config.php
 
 - name: Update Wordpress Config FIle
   lineinfile: 
-    path: /var/www/html/{{ Domain }}/wp-config.php
+    path: /var/www/html/{{ domain }}/wp-config.php
     regexp: "{{ item.regexp }}"
     line: "{{ item.line }}"
   with_items:
@@ -29,14 +29,14 @@
   
 - name: Insert Unique Keys and Salts In wp-config
   lineinfile:
-    path: /var/www/html/{{ Domain }}/wp-config.php
+    path: /var/www/html/{{ domain }}/wp-config.php
     regex: "put your unique phrase here"
     insertafter: "put your unique phrase here"
     line: "{{ api_info.content }}"
 
 - name: Remove Default Keys and Salts In wp-config
   lineinfile:
-    path: /var/www/html/{{ Domain }}/wp-config.php
+    path: /var/www/html/{{ domain }}/wp-config.php
     regex: "put your unique phrase here"
     state: "absent"
 

@@ -1,13 +1,13 @@
 - name: CentOS Dependencies
   yum:
     name: "{{ item }}"
-    state: "latest" 
-  loop: "{{ CentOSDependencies }}"
+    state: "present" 
+  loop: "{{ centos_deps }}"
   when: ansible_distribution == "CentOS" 
 
 - name: Ubuntu and Debian Dependencies
   apt: 
     name: "{{ item }}"
-    state: "latest"
-  loop: "{{ DebianDependencies }}"
+    state: "present"
+  loop: "{{ debian_deps }}"
   when: ansible_distribution == "Ubuntu" or ansible_distribution == "Debian"

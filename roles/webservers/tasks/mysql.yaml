@@ -3,15 +3,15 @@
   - name: Installing Ubuntu and Debian MySQL
     apt:
       name: "{{ item }}"
-      state: "latest"
-    loop: "{{ DebianMysqlDeps }}"
+      state: "present"
+    loop: "{{ debian_mysql_deps }}"
     when: ansible_distribution == "Ubuntu" or ansible_distribution == "Debian"
 
   - name: Installing CentOS MySQL
     yum:
       name: "{{ item }}"
-      state: "latest"
-    loop: "{{ CentOSMysqlDeps }}"
+      state: "present"
+    loop: "{{ centos_mysql_dep }}"
     when: ansible_distribution == "CentOS"
 
 - name: Starting MYSQL Service
@@ -32,26 +32,26 @@
   block:
   - name: Set MySQL Root Password
     mysql_user: 
-      login_user: "{{ MysqlRootUser }}"
-      login_password: "{{ MysqlRootPassword }}"
-      name: "{{ MysqlRootUser }}"
-      password: "{{ MysqlRootPassword }}"
+      login_user: "{{ mysql_root_user }}"
+      login_password: "{{ mysql_root_password }}"
+      name: "{{ mysql_root_user }}"
+      password: "{{ mysql_root_password }}"
       
   - name: Set Wordpress User
     mysql_user:
-      login_user: "{{ MysqlRootUser }}"
-      login_password: "{{ MysqlRootPassword }}"
-      name: "{{ MysqlUser }}"
-      password: "{{ MysqlPass }}"
-      priv: "{{ MysqlDatabase }}.*:ALL"
+      login_user: "{{ mysql_root_user }}"
+      login_password: "{{ mysql_root_password }}"
+      name: "{{ mysql_user }}"
+      password: "{{ mysql_pass }}"
+      priv: "{{ mysql_database }}.*:ALL"
       state: present
       #priv: "*.*:ALL"
 
   - name: Set Wordpress Database
     mysql_db:
-      name: "{{ MysqlDatabase }}"
-      login_user: "{{ MysqlRootUser }}"
-      login_password: "{{ MysqlRootPassword }}"
+      name: "{{ mysql_database }}"
+      login_user: "{{ mysql_root_user }}"
+      login_password: "{{ mysql_root_password }}"
       state: "present"
 
   when: ansible_distribution == "Ubuntu" or ansible_distribution == "Debian"
@@ -60,10 +60,10 @@
   block:
   - name: Get MySQL Temporary Password
     shell:  'grep password /var/log/mysqld.log | cut -d ":" -f4 | tr " " ":" | cut -d ":" -f2'
-    register: DefaultPass
-  - name: Copy CNF file
+    register: defaul_pass
+  - name: Copying CNF file
     template:
-      src: ../templates/mysqld.j2
+      src: mysqld.j2
       dest: /root/.my.cnf
       owner: root
       group: root
@@ -73,31 +73,31 @@
       name: mysqld
       state: restarted
   - name: Set new password from temporary password
-    command: 'mysql -e "SET PASSWORD = PASSWORD(''{{ DefaultPass.stdout }}'');" --connect-expired-password -uroot -p"{{ DefaultPass.stdout }}"'
+    command: 'mysql -e "SET PASSWORD = PASSWORD(''{{ defaul_pass.stdout }}'');" --connect-expired-password -uroot -p"{{ defaul_pass.stdout }}"'
   - name: Set Password Fact
     set_fact:
-      loginfact: "{{ DefaultPass.stdout }}"
+      loginfact: "{{ defaul_pass.stdout }}"
   - name: Set MySQL Root Password
     mysql_user: 
-      login_user: "{{ MysqlRootUser }}"
-      login_password: "{{ DefaultPass.stdout }}"
-      name: "{{ MysqlRootUser }}"
-      password: "{{ MysqlRootPassword }}"
+      login_user: "{{ mysql_root_user }}"
+      login_password: "{{ defaul_pass.stdout }}"
+      name: "{{ mysql_root_user }}"
+      password: "{{ mysql_root_password }}"
 
   - name: Set Wordpress Database
     mysql_db:
-      name: "{{ MysqlDatabase }}"
-      login_user: "{{ MysqlRootUser }}"
-      login_password: "{{ MysqlRootPassword }}"
+      name: "{{ mysql_database }}"
+      login_user: "{{ mysql_root_user }}"
+      login_password: "{{ mysql_root_password }}"
       state: "present"
 
   - name: Set Wordpress User
     mysql_user:
-      login_user: "{{ MysqlRootUser }}"
-      login_password: "{{ MysqlRootPassword }}"
-      name: "{{ MysqlUser }}"
-      password: "{{ MysqlPass }}"
-      priv: "{{ MysqlDatabase }}.*:ALL"
+      login_user: "{{ mysql_root_user }}"
+      login_password: "{{ mysql_root_password }}"
+      name: "{{ mysql_user }}"
+      password: "{{ mysql_pass }}"
+      priv: "{{ mysql_database }}.*:ALL"
       state: present
       #priv: "*.*:ALL"
 

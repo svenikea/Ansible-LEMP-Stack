@@ -1,16 +1,16 @@
 - name: Installing CentOS PHP modules
   yum: 
     name: "{{ item }}"
-    state: "latest"
+    state: "present"
     enablerepo: "remi-php72"
-  loop: "{{ CentOSPhpDeps }}"
+  loop: "{{ centos_php_deps }}"
   when: ansible_distribution == "CentOS"
 
 - name: Installing Debian and Ubuntu PHP modules
   apt: 
     name: "{{ item }}"
-    state: "latest"
-  loop: "{{ DebianPhpDeps }}"
+    state: "present"
+  loop: "{{ debian_php_deps }}"
   when: ansible_distribution == "Ubuntu" or ansible_distribution == "Debian"
 
 - name: PHP-FPM
@@ -27,8 +27,8 @@
       line: "{{ item.line }}"
       state: "present"
     with_items:
-      - { "regexp" : "post_max_size =", "line" : "post_max_size = {{ BodySize }}" }
-      - { "regexp" : "upload_max_filesize =", "line" : "upload_max_filesize = {{ BodySize }}" }
+      - { "regexp" : "post_max_size =", "line" : "post_max_size = {{ body_size }}" }
+      - { "regexp" : "upload_max_filesize =", "line" : "upload_max_filesize = {{ body_size }}" }
     notify: Restart PHP-FPM Service
     when: ansible_distribution == "Ubuntu"
   - name: Starting Debian PHP-FPM Service
@@ -69,7 +69,7 @@
       line: "{{ item.line }}"
       state: "present"
     with_items:
-      - { "regexp" : "post_max_size =", "line" : "post_max_size = {{ BodySize }}" }
-      - { "regexp" : "upload_max_filesize =", "line" : "upload_max_filesize = {{ BodySize }}" }
+      - { "regexp" : "post_max_size =", "line" : "post_max_size = {{ body_size }}" }
+      - { "regexp" : "upload_max_filesize =", "line" : "upload_max_filesize = {{ body_size }}" }
     notify: Restart PHP-FPM Service
   when: ansible_distribution == "CentOS"

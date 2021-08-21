@@ -4,4 +4,6 @@
     state: started
     
 - name: Reload Nginx Config
-  shell: nginx -s reload
+  service:
+    name: nginx
+    state: reloaded

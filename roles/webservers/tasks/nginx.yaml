@@ -4,27 +4,26 @@
     apt:
       name:
         - nginx
-      state: latest
+      state: present
   - name: Create Website Directory
     file:
-      path: /var/www/html/{{ Domain }}
+      path: /var/www/html/{{ domain }}
       state: directory
       group: '82'
       owner: 'www-data'
       mode: '700'
   when: ansible_distribution == "Ubuntu" or ansible_distribution == "Debian"
-
 - name: Installing Nginx
   block:
   - name: Install CentOS Nginx
     yum:
       name:
         - nginx
-      state: latest
+      state: present
     tags: debug here
   - name: Create Website Directory
     file:
-      path: /var/www/html/{{ Domain }}
+      path: /var/www/html/{{ domain }}
       state: directory
       group: 'nginx'
       owner: 'nginx'
@@ -33,7 +32,7 @@
 
 - name: Create Nginx Config folder
   file: 
-    path: /etc/nginx/conf.d/{{ Domain }}
+    path: /etc/nginx/conf.d/{{ domain }}
     state: directory
     group: root
     owner: root
@@ -41,7 +40,7 @@
 
 - name: Creating Webserver certificate location
   file:
-    path: /etc/nginx/certs/{{ Domain }}
+    path: /etc/nginx/certs/{{ domain }}
     state: directory
     mode: '644'
     owner: root
@@ -50,12 +49,19 @@
 
 - name: Creating Wordpress Config File
   template:
-    src: '../templates/wordpress.j2'
-    dest: '/etc/nginx/conf.d/{{ Domain }}/{{ Domain }}.conf'
+    src: 'wordpress.j2'
+    dest: '/etc/nginx/conf.d/{{ domain }}/{{ domain }}.conf'
+    owner: root
+    group: root
+    mode: '744'
+  
 - name: Nginx Default COnfig File
   template:
-    src: '../templates/nginx.j2'
+    src: 'nginx.j2'
     dest: '/etc/nginx/nginx.conf'
+    owner: root
+    group: root
+    mode: '744'
 - name: Delete Default webspage
   file:
     path: /etc/nginx/sites-enabled/default
@@ -66,7 +72,7 @@
     path: /etc/nginx/nginx.conf
     backrefs: yes
     regexp: '^(\s*)[#]?include /etc/nginx/conf.d/;*'
-    line: '\1include /etc/nginx/conf.d/{{ Domain }}/*.conf;'
+    line: '\1include /etc/nginx/conf.d/{{ domain }}/*.conf;'
     state: "present"
   notify:
     - Restart Nginx Config
