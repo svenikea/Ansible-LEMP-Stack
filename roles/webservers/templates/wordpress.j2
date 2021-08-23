@@ -8,12 +8,13 @@ server {
 	listen 443;
 	server_name {{ servername }};
     root   /var/www/html/{{ domain }};
+	ssl_ciphers "EECDH+AESGCM:EDH+AESGCM:AES256+EECDH:AES256+EDH";
+    ssl_protocols TLSv1 TLSv1.1 TLSv1.2;
 	ssl_certificate /etc/nginx/certs/{{ domain }}/{{ domain }}_bundle.crt;
 	ssl_certificate_key /etc/nginx/certs/{{ domain }}/{{ domain }}.key;
     	location / {
         	index  index.php index.html index.htm;
     	}
-
     	location ~ \.php$ {
         	include fastcgi_params;
     		fastcgi_keep_conn on;
