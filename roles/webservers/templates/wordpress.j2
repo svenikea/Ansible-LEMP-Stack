@@ -5,7 +5,7 @@ server {
 }
 
 server {
-	listen 443;
+	listen 443 ssl;
 	server_name {{ servername }};
     root   /var/www/html/{{ domain }};
 	ssl_ciphers "EECDH+AESGCM:EDH+AESGCM:AES256+EECDH:AES256+EDH";

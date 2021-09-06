@@ -15,9 +15,9 @@
     regexp: "{{ item.regexp }}"
     line: "{{ item.line }}"
   with_items:
-    - {'regexp': "define\\( 'DB_NAME', '(.)+' \\);", 'line': "define( 'DB_NAME', '{{ MysqlDatabase }}' );"}
-    - {'regexp': "define\\( 'DB_USER', '(.)+' \\);", 'line': "define( 'DB_USER', '{{ MysqlUser }}' );"}
-    - {'regexp': "define\\( 'DB_PASSWORD', '(.)+' \\);", 'line': "define( 'DB_PASSWORD', '{{ MysqlPass }}' );"}
+    - {'regexp': "define\\( 'DB_NAME', '(.)+' \\);", 'line': "define( 'DB_NAME', '{{ mysql_database }}' );"}
+    - {'regexp': "define\\( 'DB_USER', '(.)+' \\);", 'line': "define( 'DB_USER', '{{ mysql_user }}' );"}
+    - {'regexp': "define\\( 'DB_PASSWORD', '(.)+' \\);", 'line': "define( 'DB_PASSWORD', '{{ mysql_pass }}' );"}
 
 - name: Get API Information For wp-config
   no_log: True
@@ -25,14 +25,14 @@
     url: "https://api.wordpress.org/secret-key/1.1/salt/"
     return_content: True
     method: GET
-  register: api_info
+  register: key_info
   
 - name: Insert Unique Keys and Salts In wp-config
   lineinfile:
     path: /var/www/html/{{ domain }}/wp-config.php
     regex: "put your unique phrase here"
     insertafter: "put your unique phrase here"
-    line: "{{ api_info.content }}"
+    line: "{{ key_info.content }}"
 
 - name: Remove Default Keys and Salts In wp-config
   lineinfile:
