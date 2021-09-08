@@ -9,7 +9,7 @@ debian_php_deps: [ 'php-curl', 'php-fpm' , 'php-mysql' , 'php-curl' , 'php-gd' ,
 debian_mysql_deps: [ 'mysql-server' , 'python-mysqldb', ' python3-mysqldb' ]
 
 
-centos_deps: [ 'pyOpenSSL' , 'curl', 'python2-cryptography', 'epel-release' ,'yum-utils', 'python36-pyOpenSSL', 'python36-crypto', 'http://rpms.remirepo.net/enterprise/remi-release-7.rpm', 'https://dev.mysql.com/get/mysql57-community-release-el7-11.noarch.rpm' ]   
+centos_deps: [ 'pyOpenSSL' , 'curl', 'python2-cryptography', 'epel-release' ,'yum-utils', 'python36-pyOpenSSL', 'python36-crypto' ]   
 centos_php_deps : [ 'php-cli', 'php-fpm', 'php-mysql', 'php-json', 'php-opcache', 'php-mbstring', 'php-xml', 'php-gd', 'php-curl']
 centos_mysql_dep : [ 'mysql-community-server', 'MySQL-python', 'python36-mysql' ]
 debian_php_fpm: "unix:/var/run/php/php7.0-fpm.sock"
