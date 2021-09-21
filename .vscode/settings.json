@@ -1,0 +1,30 @@
+{
+    "workbench.colorTheme": "Default Dark+",
+    "editor.suggestSelection": "first",
+    "vsintellicode.modify.editor.suggestSelection": "automaticallyOverrodeDefaultValue",
+    "yaml.customTags": [
+        "!encrypted/pkcs1-oaep scalar",
+        "!vault scalar"
+    ],
+    "redhat.telemetry.enabled": false,
+    "workbench.startupEditor": "none",
+    "sync.gist": "81530a30e8d8e9e99842c1fb5779f406",
+    "extensions.ignoreRecommendations": true,
+    "files.associations": {
+        "*.yml": "ansible",
+        "*.yaml": "ansible"
+    },
+    "[yaml]": {
+        "editor.insertSpaces": true,
+        "editor.tabSize": 2,
+        "editor.autoIndent": "keep"
+    },
+    "[ansible]" :{
+        "editor.tabSize": 2,
+        "editor.insertSpaces": true,
+        "editor.autoIndent": "keep"
+    },
+    "explorer.confirmDelete": false,
+    "workbench.iconTheme": "vscode-icons",
+    "vsicons.dontShowNewVersionMessage": true
+}
