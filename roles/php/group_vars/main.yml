@@ -1,0 +1,5 @@
+debian_php_deps: [ 'php-curl', 'php-fpm' , 'php-mysql' , 'php-curl' , 'php-gd' , 'php-intl' , 'php-mbstring' , 'php-soap' , 'php-xml' , 'php-xmlrpc' , 'php-zip' ]
+centos_php_deps : [ 'php-cli', 'php-fpm', 'php-mysql', 'php-json', 'php-opcache', 'php-mbstring', 'php-xml', 'php-gd', 'php-curl']
+debian_php_fpm: "unix:/var/run/php/php7.0-fpm.sock"
+centos_php_fpm: "unix:/var/run/php-fpm/www.sock"
+ubuntu_php_fpm: "unix:/var/run/php/php7.2-fpm.sock"

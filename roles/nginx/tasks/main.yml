@@ -1,0 +1,78 @@
+- name: Installing Nginx
+  block:
+    - name: Install Ubuntu Debian Nginx
+      apt:
+        name:
+          - nginx
+        state: present
+    - name: Create Website Directory
+      file:
+        path: /var/www/html/{{ domain }}
+        state: directory
+        group: '82'
+        owner: 'www-data'
+        mode: '700'
+  when: ansible_distribution == "Ubuntu" or ansible_distribution == "Debian"
+- name: Installing Nginx
+  block:
+    - name: Install CentOS Nginx
+      yum:
+        name:
+          - nginx
+        state: present
+      tags: debug here
+    - name: Create Website Directory
+      file:
+        path: /var/www/html/{{ domain }}
+        state: directory
+        group: 'nginx'
+        owner: 'nginx'
+        mode: '700'
+  when: ansible_distribution == "CentOS" 
+
+- name: Create Nginx Config folder
+  file: 
+    path: /etc/nginx/conf.d/{{ domain }}
+    state: directory
+    group: root
+    owner: root
+    mode: '755'
+
+- name: Creating Webserver certificate location
+  file:
+    path: /etc/nginx/certs/{{ domain }}
+    state: directory
+    mode: '644'
+    owner: root
+    group: root
+
+
+- name: Creating Wordpress Config File
+  template:
+    src: 'wordpress.j2'
+    dest: '/etc/nginx/conf.d/{{ domain }}/{{ domain }}.conf'
+    owner: root
+    group: root
+    mode: '744'
+  
+- name: Nginx Default COnfig File
+  template:
+    src: 'nginx.j2'
+    dest: '/etc/nginx/nginx.conf'
+    owner: root
+    group: root
+    mode: '744'
+- name: Delete Default webspage
+  file:
+    path: /etc/nginx/sites-enabled/default
+    state: "absent"
+
+- name: Editing Nginx Config
+  lineinfile:
+    path: /etc/nginx/nginx.conf
+    backrefs: yes
+    regexp: '^(\s*)[#]?include /etc/nginx/conf.d/;*'
+    line: '\1include /etc/nginx/conf.d/{{ domain }}/*.conf;'
+    state: "present"
+  notify:
+    - Restart Nginx Config

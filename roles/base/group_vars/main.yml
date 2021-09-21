@@ -1,0 +1,2 @@
+debian_deps: [ 'python-openssl' , 'curl' ]
+centos_deps: [ 'pyOpenSSL' , 'curl', 'python2-cryptography', 'epel-release' ,'yum-utils', 'python36-pyOpenSSL', 'python36-crypto' ]   
