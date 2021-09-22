@@ -1,0 +1,16 @@
+# vm.yaml
+---
+- hosts: cloud-server
+  become: yes
+  roles:
+    - base
+    - nginx
+    - ssl
+    - php
+    - mysql
+    - wordpress
+    - service
+
+      
+
+
