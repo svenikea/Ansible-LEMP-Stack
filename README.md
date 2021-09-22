@@ -1,19 +1,22 @@
-# Deploy LEMP Stack with Ansible 
+# Deploy LEMP Stack with Ansible Playbooks
 
 ## Introduction
-This is a Wordpress LEMP Stack deployment script for use with Ubuntu, Debian and CentOS
+This is a Wordpress LEMP Stack deployment playbook for use with Ubuntu, Debian and CentOS
 
-## Action Performed 
+## Roles Performed 
 
-* Install Nginx, MySQL, PHP, Wordpress and its necessary dependencies 
+* Install Dependencies
+* Install Nginx
+* Install and Setup MySQL
 * Enable TLS/SSL connection
-* Setup new MySQL, PHP-FPM configuration
-* Download and unpacking Wordpress to ```/var/www/html```
+* Install PHP and Setup PHP-FPM configuration
+* Download, Unpacking WordPress and setup WordPress
 
 ## Variables
 
-> To chage the way ansible run and setup WordPress use the following variable 
+> To chage Playbook variable go to ```group_vars/main.yml```
 
+> For Example
 ```yml
 MysqlUser: "mysql"
 MysqlPass: "123"
@@ -22,3 +25,9 @@ MysqlRootUser: "root"
 MysqlRootPassword: "root"
 BodySize: 100M
 ```
+
+## Future Work
+* Separate server for different roles
+* High Availability Proxy or HAProxy
+* Redis for caching 
+* GlusterFS for scalable network file system

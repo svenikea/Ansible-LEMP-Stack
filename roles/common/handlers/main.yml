@@ -1,6 +1,3 @@
----
-# handlers file for roles/webserver
-
 - name: Restart Nginx Config
   shell: nginx -s reload
 
@@ -29,4 +26,3 @@
   when: ansible_distribution == "Debian"
   listen: "Restart PHP-FPM Service"
   
-

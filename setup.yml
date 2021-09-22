@@ -1,0 +1,18 @@
+# vm.yaml
+---
+- hosts: test
+  become: yes
+  vars_files:
+    - "group_vars/main.yml"
+  roles:
+    - base
+    - common
+    - nginx
+    - ssl
+    - php
+    - mysql
+    - wordpress
+
+      
+
+

@@ -1,0 +1,34 @@
+- name: Delete apt lock file 
+  file:
+    path: "{{ item }}"
+    state: absent
+  with_items:
+    - /var/cache/apt/*
+    - /var/lib/dpkg/lock
+    - /var/lib/dpkg/lock-frontend
+    - /var/cache/debconf/ 
+    - /var/lib/apt/lists/*
+    - /var/lib/dpkg/lock 
+    - /var/lib/dpkg/lock-frontend 
+    - /var/cache/debconf/
+
+- name: Clean cache
+  command: apt clean
+
+- name: Update Cache
+  apt: 
+    update_cache: yes
+
+- name: CentOS Dependencies
+  yum:
+    name: "{{ item }}"
+    state: "present" 
+  loop: "{{ centos_deps }}"
+  when: ansible_distribution == "CentOS" 
+
+- name: Ubuntu and Debian Dependencies
+  apt: 
+    name: "{{ item }}"
+    state: "present"
+  loop: "{{ debian_deps }}"
+  when: ansible_distribution == "Ubuntu" or ansible_distribution == "Debian"

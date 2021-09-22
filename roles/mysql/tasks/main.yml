@@ -1,18 +1,22 @@
-- name: MySQL 
-  block:
-    - name: Installing Ubuntu and Debian MySQL
-      apt:
-        name: "{{ item }}"
-        state: "present"
-      loop: "{{ debian_mysql_deps }}"
-      when: ansible_distribution == "Ubuntu" or ansible_distribution == "Debian"
+- name: Installing Ubuntu and Debian MySQL
+  apt:
+    name: "{{ item }}"
+    state: "present"
+  loop: "{{ debian_mysql_deps }}"
+  when: ansible_distribution == "Ubuntu" or ansible_distribution == "Debian"
 
+- name: CentOS MySQL
+  block:
+    - name: Installing MySQL Repo
+      yum:
+        name: https://dev.mysql.com/get/mysql57-community-release-el7-11.noarch.rpm
+        state: "present"
     - name: Installing CentOS MySQL
       yum:
         name: "{{ item }}"
         state: "present"
       loop: "{{ centos_mysql_dep }}"
-      when: ansible_distribution == "CentOS"
+  when: ansible_distribution == "CentOS"
 
 - name: Starting MYSQL Service
   block: 
@@ -59,7 +63,7 @@
 - name: MySQL Setup & Configuration
   block:
     - name: Get MySQL Temporary Password
-      shell:  'grep password /var/log/mysqld.log | cut -d ":" -f4 | tr " " ":" | cut -d ":" -f2'
+      shell:  'grep "temporary password" /var/log/mysqld.log | sed "s|.*: ||"'
       register: defaul_pass
     - name: Copying CNF file
       template:
@@ -99,6 +103,4 @@
         password: "{{ mysql_pass }}"
         priv: "{{ mysql_database }}.*:ALL"
         state: present
-        #priv: "*.*:ALL"
-
   when: ansible_distribution == "CentOS" 
