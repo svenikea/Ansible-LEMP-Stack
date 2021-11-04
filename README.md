@@ -29,5 +29,8 @@ BodySize: 100M
 ## Future Work
 * Separate server for different roles
 * High Availability Proxy or HAProxy
-* Redis for caching 
+* Redis cluster for caching 
+* Mysql Cluster
+* Keepalived
+* Kibana and elastic for log management
 * GlusterFS for scalable network file system
