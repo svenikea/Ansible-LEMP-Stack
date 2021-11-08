@@ -1,0 +1,2 @@
+deb_ssl_deps: ['python-openssl', 'python3-openssl']
+rpm_ssl_deps: ['python2-pyOpenSSL', 'python3-pyOpenSSL']

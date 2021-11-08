@@ -1,62 +1,64 @@
-- name: Download and Unpack Wordpress
-  unarchive:
-    src: https://wordpress.org/latest.tar.gz
-    dest: /var/www/html/{{ domain }}
-    validate_certs: no
-    remote_src: yes
-    extra_opts: [--strip-components=1]
+- name: Wordpress Role 
+  become: yes
+  block:
+    - name: Download and Unpack Wordpress
+      unarchive:
+        src: https://wordpress.org/latest.tar.gz
+        dest: /var/www/html/{{ domain }}
+        validate_certs: no
+        remote_src: yes
+        extra_opts: [--strip-components=1]
 
-- name: Copy Sample Config
-  command: mv /var/www/html/{{ domain }}/wp-config-sample.php /var/www/html/{{ domain }}/wp-config.php creates=/var/www/html/{{ domain }}/wp-config.php
+    - name: Copy Sample Config
+      command: mv /var/www/html/{{ domain }}/wp-config-sample.php /var/www/html/{{ domain }}/wp-config.php creates=/var/www/html/{{ domain }}/wp-config.php
 
-- name: Update Wordpress Config FIle
-  lineinfile: 
-    path: /var/www/html/{{ domain }}/wp-config.php
-    regexp: "{{ item.regexp }}"
-    line: "{{ item.line }}"
-  with_items:
-    - {'regexp': "define\\( 'DB_NAME', '(.)+' \\);", 'line': "define( 'DB_NAME', '{{ mysql_database }}' );"}
-    - {'regexp': "define\\( 'DB_USER', '(.)+' \\);", 'line': "define( 'DB_USER', '{{ mysql_user }}' );"}
-    - {'regexp': "define\\( 'DB_PASSWORD', '(.)+' \\);", 'line': "define( 'DB_PASSWORD', '{{ mysql_pass }}' );"}
+    - name: Update Wordpress Config FIle
+      template:
+        src: wp-config.j2
+        dest: /var/www/html/{{ domain }}/wp-config.php
+        owner: www-data
+        group: www-data
+        mode: 755
 
-- name: Get API Information For wp-config
-  no_log: True
-  uri:
-    url: "https://api.wordpress.org/secret-key/1.1/salt/"
-    return_content: True
-    method: GET
-  register: key_info
-  
-- name: Insert Unique Keys and Salts In wp-config
-  lineinfile:
-    path: /var/www/html/{{ domain }}/wp-config.php
-    regex: "put your unique phrase here"
-    insertafter: "put your unique phrase here"
-    line: "{{ key_info.content }}"
+    - name: Get API Information For wp-config
+      no_log: True
+      uri:
+        url: "https://api.wordpress.org/secret-key/1.1/salt/"
+        return_content: True
+        method: GET
+      register: key_info
+      
+    - name: Insert Unique Keys and Salts In wp-config
+      lineinfile:
+        path: /var/www/html/{{ domain }}/wp-config.php
+        regex: "put your unique phrase here"
+        insertafter: "put your unique phrase here"
+        line: "{{ key_info.content }}"
 
-- name: Remove Default Keys and Salts In wp-config
-  lineinfile:
-    path: /var/www/html/{{ domain }}/wp-config.php
-    regex: "put your unique phrase here"
-    state: "absent"
+    - name: Remove Default Keys and Salts In wp-config
+      lineinfile:
+        path: /var/www/html/{{ domain }}/wp-config.php
+        regex: "put your unique phrase here"
+        state: "absent"
 
-- name: Set Site permission
-  file:
-    path: /var/www/html
-    mode: '700'
-    owner: 'nginx'
-    group: 'nginx'
-    state: directory
-    recurse: yes
-  notify: Restart Nginx Service
-  when: ansible_distribution == "CentOS"
+    - name: Set Site permission
+      file:
+        path: /var/www/html
+        mode: '700'
+        owner: 'nginx'
+        group: 'nginx'
+        state: directory
+        recurse: yes
+      notify: Restart Nginx Service
+      when: ansible_distribution == "CentOS"
 
-- name: Set Site permission
-  file:
-    path: /var/www/html
-    mode: '700'
-    owner: 'www-data'
-    group: 'www-data'
-    state: directory
-    recurse: yes
-  when: ansible_distribution == "Ubuntu" or ansible_distribution == "Debian"
+    - name: Set Site permission
+      file:
+        path: /var/www/html
+        mode: '700'
+        owner: 'www-data'
+        group: 'www-data'
+        state: directory
+        recurse: yes
+      notify: Restart Nginx Service
+      when: ansible_distribution == "Ubuntu" or ansible_distribution == "Debian"

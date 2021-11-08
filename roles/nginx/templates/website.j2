@@ -1,0 +1,37 @@
+server {
+    listen      80;
+    listen      [::]:80;
+    server_name {{ servername }};
+    set         $base /var/www/{{ servername }};
+    root        $base;
+
+    # security
+    include     nginxconfig.io/security.conf;
+
+    # restrict methods
+    if ($request_method !~ ^(GET|POST|PUT|DELETE|HEAD)$) {
+        return '404';
+    }
+
+    # logging
+    access_log /var/log/nginx/{{ servername }}.access.log;
+    error_log  /var/log/nginx/{{ servername }}.error.log warn;
+
+    # index.php
+    index      index.php;
+
+    # index.php fallback
+    location / {
+        try_files $uri $uri/ /index.php?$query_string;
+    }
+
+    # additional config
+    include nginxconfig.io/general.conf;
+    include nginxconfig.io/wordpress.conf;
+
+    # handle .php
+    location ~ \.php$ {
+        fastcgi_pass unix:/var/run/php/php7.4-fpm.sock;
+        include      nginxconfig.io/php_fastcgi.conf;
+    }
+}
