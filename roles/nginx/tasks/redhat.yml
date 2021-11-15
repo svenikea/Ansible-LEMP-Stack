@@ -1,0 +1,16 @@
+- name: CentOS System
+  become: yes
+  block:
+    - name: Install Nginx
+      yum:
+        name: nginx
+        state: present
+        update_cache: yes
+
+    - name: Creating Web Data
+      file:
+        path: /var/www/{{ inventory_hostname }}
+        state: directory
+        group: 'nginx'
+        owner: 'nginx'
+        mode: '700'
