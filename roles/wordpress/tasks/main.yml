@@ -1,25 +1,12 @@
+- include: debian.yml
+  when: ansible_os_family == "Debian"
+
+- include: redhat.yml
+  when: ansible_os_family == "RedHat"
+
 - name: Wordpress Role 
   become: yes
   block:
-    - name: Download and Unpack Wordpress
-      unarchive:
-        src: https://wordpress.org/latest.tar.gz
-        dest: /var/www/html/{{ domain }}
-        validate_certs: no
-        remote_src: yes
-        extra_opts: [--strip-components=1]
-
-    - name: Copy Sample Config
-      command: mv /var/www/html/{{ domain }}/wp-config-sample.php /var/www/html/{{ domain }}/wp-config.php creates=/var/www/html/{{ domain }}/wp-config.php
-
-    - name: Update Wordpress Config FIle
-      template:
-        src: wp-config.j2
-        dest: /var/www/html/{{ domain }}/wp-config.php
-        owner: www-data
-        group: www-data
-        mode: 755
-
     - name: Get API Information For wp-config
       no_log: True
       uri:
@@ -30,35 +17,15 @@
       
     - name: Insert Unique Keys and Salts In wp-config
       lineinfile:
-        path: /var/www/html/{{ domain }}/wp-config.php
+        path: /var/www/{{ inventory_hostname }}/wp-config.php
         regex: "put your unique phrase here"
         insertafter: "put your unique phrase here"
         line: "{{ key_info.content }}"
 
     - name: Remove Default Keys and Salts In wp-config
       lineinfile:
-        path: /var/www/html/{{ domain }}/wp-config.php
+        path: /var/www/{{ inventory_hostname }}/wp-config.php
         regex: "put your unique phrase here"
         state: "absent"
 
-    - name: Set Site permission
-      file:
-        path: /var/www/html
-        mode: '700'
-        owner: 'nginx'
-        group: 'nginx'
-        state: directory
-        recurse: yes
-      notify: Restart Nginx Service
-      when: ansible_distribution == "CentOS"
 
-    - name: Set Site permission
-      file:
-        path: /var/www/html
-        mode: '700'
-        owner: 'www-data'
-        group: 'www-data'
-        state: directory
-        recurse: yes
-      notify: Restart Nginx Service
-      when: ansible_distribution == "Ubuntu" or ansible_distribution == "Debian"
