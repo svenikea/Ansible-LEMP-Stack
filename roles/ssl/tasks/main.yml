@@ -1,24 +1,17 @@
+- include: debian.yml
+  when: ansible_os_family == "Debian"
+
+- include: redhat.yml
+  when: ansible_os_family == "RedHat"
+
 - name: SSL/TLS Setup
   become: yes
   block:  
-    - name: Install python cryptography
-      apt:
-        name: "{{ deb_ssl_deps }}"
-        state: present
-      when: ansible_distribution == "Ubuntu" or ansible_distribution == "Debian"
-
-    - name: Install python cryptography
-      yum:
-        name: "{{ rpm_ssl_deps  }}"
-        state: present
-      when: ansible_distribution == "CentOS"
-
     - name: Generate Website Private key
       openssl_privatekey:
         path: /etc/ssl/certs/haproxy.key
         size: 2048
         type: RSA
-      register: haproxy_privatekey
 
     - name: Generate Certificate Signing Request
       openssl_csr:
@@ -34,6 +27,5 @@
       register: haproxy_certificate
     
     - name: Create pem file
-      shell: cat /etc/ssl/certs/haproxy.key /etc/ssl/certs/haproxy.crt > /etc/ssl/certs/test.pem
-      when: haproxy_privatekey is changed and haproxy_certificate is changed
-  when: inventory_hostname in groups['loadbalancer']
+      shell: cat /etc/ssl/certs/haproxy.key /etc/ssl/certs/haproxy.crt > /etc/ssl/certs/haproxy.pem
+      when: haproxy_certificate is changed

@@ -1,0 +1,6 @@
+- name: Install python cryptography
+  become: yes
+  yum:
+    name: "{{ rpm_ssl_deps  }}"
+    state: present
+    update_cache: yes
