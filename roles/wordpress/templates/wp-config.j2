@@ -29,7 +29,7 @@ define( 'DB_USER', '{{ wordpress_user }}' );
 define( 'DB_PASSWORD', '{{ wordpress_password }}' );
 
 /** MySQL hostname */
-define( 'DB_HOST', '{{ hostvars[groups['galera'][0]].galera_vip }}' );
+define( 'DB_HOST', '{{ hostvars[groups['galera_servers'][0]].galera_vip }}' );
 
 /** Database charset to use in creating database tables. */
 define( 'DB_CHARSET', 'utf8' );
@@ -83,8 +83,10 @@ define( 'WP_DEBUG', false );
 
 /* Add any custom values between this line and the "stop editing" line. */
 
-define('WP_HOME','https://www.wordpress.sun-asterisk.vn');
-define('WP_SITEURL','https://www.wordpress.sun-asterisk.vn');
+define('FORCE_SSL_ADMIN', true);
+define('FORCE_SSL_LOGIN', true);
+if ($_SERVER['HTTP_X_FORWARDED_PROTO'] == 'https')
+  $_SERVER['HTTPS']='on';
 
 /* That's all, stop editing! Happy publishing. */
 
