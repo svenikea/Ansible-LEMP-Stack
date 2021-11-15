@@ -1,36 +1,28 @@
-
-server {
-    listen 80 default_server;
-    server_name {{ servername }};
-    return 301 https://$server_name$request_uri;
+#jinja2: trim_blocks: "true", lstrip_blocks: "false"
+# WordPress: allow TinyMCE
+location = /wp-includes/js/tinymce/wp-tinymce.php {
+    include nginxconfig.io/php_fastcgi.conf;
 }
 
-server {
-	listen 443 ssl;
-	server_name {{ servername }};
-    root /var/www/html/{{ domain }};
-	ssl_ciphers "EECDH+AESGCM:EDH+AESGCM:AES256+EECDH:AES256+EDH";
-    ssl_protocols TLSv1 TLSv1.1 TLSv1.2;
-	ssl_certificate /etc/nginx/certs/{{ domain }}/{{ domain }}_bundle.crt;
-	ssl_certificate_key /etc/nginx/certs/{{ domain }}/{{ domain }}.key;
-	error_log /var/log/nginx/wordpress_error.log;
-	access_log /var/log/nginx/wordpress_access.log;
-    	location / {
-        	index  index.php index.html index.htm;
-    	}
-    	location ~ \.php$ {
-        	include fastcgi_params;
-    		fastcgi_keep_conn on;
-			{% if ansible_distribution == "Ubuntu" %}
-        		fastcgi_pass   {{ ubuntu_php_fpm }};
-			{% elif ansible_distribution == "Debian" %}
-				fastcgi_pass   {{ debian_php_fpm }};
-			{% elif ansible_distribution == "CentOS" %}
-				fastcgi_pass   {{ centos_php_fpm }};
-			{% endif %}
-        	fastcgi_index  index.php;
-			fastcgi_buffers 8 16k;
-			fastcgi_buffer_size 32k;
-        	fastcgi_param  SCRIPT_FILENAME  $realpath_root$fastcgi_script_name;
-    }
+# WordPress: deny wp-content, wp-includes php files
+location ~* ^/(?:wp-content|wp-includes)/.*\.php$ {
+    deny all;
+}
+
+# WordPress: deny wp-content/uploads nasty stuff
+location ~* ^/wp-content/uploads/.*\.(?:s?html?|php|js|swf)$ {
+    deny all;
+}
+
+# WordPress: SEO plugin
+location ~* ^/wp-content/plugins/wordpress-seo(?:-premium)?/css/main-sitemap\.xsl$ {}
+
+# WordPress: deny wp-content/plugins (except earlier rules)
+location ~ ^/wp-content/plugins {
+    deny all;
+}
+
+# WordPress: deny general stuff
+location ~* ^/(?:xmlrpc\.php|wp-links-opml\.php|wp-config\.php|wp-config-sample\.php|readme\.html|license\.txt)$ {
+    deny all;
 }

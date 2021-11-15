@@ -1,19 +1,39 @@
-# Generate an OpenSSL private key with the values (4096 bits, RSA)
-- name: Generate Website Private key
-  openssl_privatekey:
-    path: /etc/nginx/certs/{{ domain }}/{{ domain }}.key
-    size: 4096
-    type: RSA
+- name: SSL/TLS Setup
+  become: yes
+  block:  
+    - name: Install python cryptography
+      apt:
+        name: "{{ deb_ssl_deps }}"
+        state: present
+      when: ansible_distribution == "Ubuntu" or ansible_distribution == "Debian"
 
-# Generate an OpenSSL Certificate Signing Request
-- name: Generate Certificate Signing Request
-  openssl_csr:
-    path: /etc/nginx/certs/{{ domain }}/{{ domain }}.csr
-    privatekey_path: /etc/nginx/certs/{{ domain }}/{{ domain }}.key
+    - name: Install python cryptography
+      yum:
+        name: "{{ rpm_ssl_deps  }}"
+        state: present
+      when: ansible_distribution == "CentOS"
 
-- name: Generate a Self Signed OpenSSL certificate
-  openssl_certificate:
-    path: /etc/nginx/certs/{{ domain }}/{{ domain }}_bundle.crt
-    privatekey_path: /etc/nginx/certs/{{ domain }}/{{ domain }}.key
-    csr_path: /etc/nginx/certs/{{ domain }}/{{ domain }}.csr
-    provider: selfsigned
+    - name: Generate Website Private key
+      openssl_privatekey:
+        path: /etc/ssl/certs/haproxy.key
+        size: 2048
+        type: RSA
+      register: haproxy_privatekey
+
+    - name: Generate Certificate Signing Request
+      openssl_csr:
+        path: /etc/ssl/certs/haproxy.csr
+        privatekey_path: /etc/ssl/certs/haproxy.key
+
+    - name: Generate a Self Signed OpenSSL certificate
+      openssl_certificate:
+        path: /etc/ssl/certs/haproxy.crt
+        privatekey_path: /etc/ssl/certs/haproxy.key
+        csr_path: /etc/ssl/certs/haproxy.csr
+        provider: selfsigned
+      register: haproxy_certificate
+    
+    - name: Create pem file
+      shell: cat /etc/ssl/certs/haproxy.key /etc/ssl/certs/haproxy.crt > /etc/ssl/certs/test.pem
+      when: haproxy_privatekey is changed and haproxy_certificate is changed
+  when: inventory_hostname in groups['loadbalancer']

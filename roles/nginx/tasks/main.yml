@@ -1,78 +1,65 @@
-- name: Installing Nginx
+- include: debian.yml
+  when: ansible_os_family == "Debian"
+
+- include: redhat.yml
+  when: ansible_os_family == "RedHat"
+
+- name: Nginx Setup
+  become: yes
   block:
-    - name: Install Ubuntu Debian Nginx
-      apt:
-        name:
-          - nginx
-        state: present
-    - name: Create Website Directory
+    - name: Creating nginxconfig.io Directory
       file:
-        path: /var/www/html/{{ domain }}
-        state: directory
-        group: '82'
-        owner: 'www-data'
-        mode: '700'
-  when: ansible_distribution == "Ubuntu" or ansible_distribution == "Debian"
-- name: Installing Nginx
-  block:
-    - name: Install CentOS Nginx
-      yum:
-        name:
-          - nginx
-        state: present
-      tags: debug here
-    - name: Create Website Directory
+        state: directory 
+        owner: root
+        group: root
+        mode: "744"
+        dest: /etc/nginx/nginxconfig.io
+
+    - name: Copying General Required Config File
+      template:
+        src: "{{ item.source }}"
+        dest: "{{ item.path }}"
+        owner: root
+        group: root
+        mode: '644'
+      loop:
+        - { path: "/etc/nginx/conf.d/{{ inventory_hostname }}.conf", source: "website.j2" }
+        - { path: "/etc/nginx/conf.d/nginx.conf", source: "nginx.j2" }
+        - { path: "/etc/nginx/nginxconfig.io/security.conf", source: "security.j2" }
+        - { path: "/etc/nginx/nginxconfig.io/general.conf", source: "general.j2" }
+
+    - name: Copying Webserver's Specific Config File
+      template: 
+        src: "{{ item.source }}"
+        dest: "{{ item.path }}"
+        owner: root
+        group: root
+        mode: "644"
+      loop: 
+        - { path: "/etc/nginx/nginxconfig.io/php_fastcgi.conf", source: "php_fastcgi.j2" }
+        - { path: "/etc/nginx/nginxconfig.io/wordpress.conf", source: "wordpress.j2" }
+      when: inventory_hostname in groups['wordpress_servers']
+
+    - name: Copying Zabbix's Specific Config File
+      template: 
+        src: php_fastcgi.j2
+        dest: /etc/nginx/nginxconfig.io/php_fastcgi.conf
+        owner: root
+        group: root
+        mode: "644"
+      when: inventory_hostname in groups['zabbix_servers']
+
+    - name: Copying Kibana's Specific Config File
+      template: 
+        src: proxy.j2
+        dest: /etc/nginx/nginxconfig.io/proxy.conf
+        owner: root
+        group: root
+        mode: "644"
+      when: inventory_hostname in groups['kibana_servers']
+
+    - name: Delete Default webspage
       file:
-        path: /var/www/html/{{ domain }}
-        state: directory
-        group: 'nginx'
-        owner: 'nginx'
-        mode: '700'
-  when: ansible_distribution == "CentOS" 
-
-- name: Create Nginx Config folder
-  file: 
-    path: /etc/nginx/conf.d/{{ domain }}
-    state: directory
-    group: root
-    owner: root
-    mode: '755'
-
-- name: Creating Webserver certificate location
-  file:
-    path: /etc/nginx/certs/{{ domain }}
-    state: directory
-    mode: '644'
-    owner: root
-    group: root
-
-
-- name: Creating Wordpress Config File
-  template:
-    src: 'wordpress.j2'
-    dest: '/etc/nginx/conf.d/{{ domain }}/{{ domain }}.conf'
-    owner: root
-    group: root
-    mode: '744'
-  
-- name: Nginx Default COnfig File
-  template:
-    src: 'nginx.j2'
-    dest: '/etc/nginx/nginx.conf'
-    owner: root
-    group: root
-    mode: '744'
-- name: Delete Default webspage
-  file:
-    path: /etc/nginx/sites-enabled/default
-    state: "absent"
-
-- name: Editing Nginx Config
-  lineinfile:
-    path: /etc/nginx/nginx.conf
-    backrefs: yes
-    regexp: '^(\s*)[#]?include /etc/nginx/conf.d/;*'
-    line: '\1include /etc/nginx/conf.d/{{ domain }}/*.conf;'
-    state: "present"
-  notify:
-    - Restart Nginx Config
+        path: /etc/nginx/sites-enabled/default
+        state: "absent"
+      notify: Restart Nginx Config

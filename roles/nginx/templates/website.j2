@@ -1,0 +1,48 @@
+#jinja2: trim_blocks: "true", lstrip_blocks: "false"
+server {
+    listen      80;
+    listen      [::]:80;
+    server_name {{ inventory_hostname }};
+    set         $base /var/www/{{ inventory_hostname }};
+    root        $base;
+
+    # security
+    include     nginxconfig.io/security.conf;
+
+    # restrict methods
+    if ($request_method !~ ^(GET|POST|PUT|DELETE|HEAD)$) {
+        return '404';
+    }
+
+    # logging
+    access_log /var/log/nginx/{{ inventory_hostname }}.access.log;
+    error_log  /var/log/nginx/{{ inventory_hostname }}.error.log warn;
+    {% if inventory_hostname in groups['wordpress_servers'] or inventory_hostname in groups['zabbix_servers'] %}
+    # index.php
+    index      index.php;
+
+    # index.php fallback
+    location / {
+        try_files $uri $uri/ /index.php?$query_string;
+    }
+
+    # additional config
+    include nginxconfig.io/general.conf;
+    {% if inventory_hostname in groups['wordpress_servers'] %}
+    include nginxconfig.io/wordpress.conf;
+    {% endif %}
+
+    # handle .php
+    location ~ \.php$ {
+        fastcgi_pass unix:/var/run/php/php7.4-fpm.sock;
+        include      nginxconfig.io/php_fastcgi.conf;
+    }
+    {% endif %}
+    {% if inventory_hostname in groups['kibana_servers'] %}
+    # reverse proxy
+    location  {
+        proxy_pass http://{{ hostvars[groups['kibana_servers'][0]].ansible_host }}:5601;
+        include    nginxconfig.io/proxy.conf;
+    }
+    {% endif %}
+}
