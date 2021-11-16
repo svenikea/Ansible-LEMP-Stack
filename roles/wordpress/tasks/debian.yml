@@ -7,6 +7,9 @@
         dest: /var/www/{{ inventory_hostname }}
         validate_certs: no
         remote_src: yes
+        owner: www-data
+        group: www-data
+        mode: "755"
         extra_opts: [--strip-components=1]
 
     - name: Conpying Wordpress Config FIle
