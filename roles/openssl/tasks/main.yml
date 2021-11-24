@@ -1,4 +1,4 @@
-- name: SSL/TLS Setup
+- name: Openssl Role
   become: yes
   block:  
     - name: Install python cyptography
@@ -32,5 +32,5 @@
     - name: Create pem file
       shell: cat /etc/ssl/certs/haproxy.key /etc/ssl/certs/haproxy.crt > /etc/ssl/certs/haproxy.pem
       when: haproxy_privatekey is changed and haproxy_certificate is changed
-  when: inventory_hostname in groups['loadbalancer'] or inventory_hostname in groups['ext-loadbalancer']
+
       
