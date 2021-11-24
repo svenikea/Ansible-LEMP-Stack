@@ -1,0 +1,11 @@
+mysql_key_id: BC19DDBA
+galera_deps: 
+  - galera-3 
+  - mysql-wsrep-5.7 
+  - galera-arbitrator-3 
+  - python3-mysqldb 
+  - rsync 
+  - python-mysqldb
+galera_url: 
+  - "deb http://releases.galeracluster.com/mysql-wsrep-5.7/ubuntu bionic main"
+  - "deb http://releases.galeracluster.com/galera-3/ubuntu bionic main"

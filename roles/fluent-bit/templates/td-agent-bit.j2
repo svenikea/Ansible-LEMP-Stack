@@ -1,0 +1,65 @@
+#jinja2: lstrip_blocks: True, trim_blocks: True
+[SERVICE]
+    # Flush
+    # =====
+    # set an interval of seconds before to flush records to a destination
+    Flush        5
+    Daemon       Off
+
+    # Log_Level
+    # =========
+    # Set the verbosity level of the service, values can be:
+    #
+    # - error
+    # - warning
+    # - info
+    # - debug
+    # - trace
+    #
+    # by default 'info' is set, that means it includes 'error' and 'warning'.
+    Log_Level    info
+    Parsers_File parsers.conf
+    Plugins_File plugins.conf
+    Http_Server  Off
+    Http_Listen  0.0.0.0
+    Http_Port    2020
+
+[INPUT]
+    {% if inventory_hostname in groups['galera_servers'] %}
+    Name tail
+    Path /var/log/mysql/*.log, /var/log/zabbix/zabbix-agent/*.log
+    {% elif inventory_hostname in groups['zabbix_servers'] %}
+    Name tail
+    Path /var/log/zabbix/zabbix-server/*.log, /var/log/zabbix/zabbix-agent/*.log, /var/log/nginx/{{ inventory_hostname }}.{{ chosen_domain }}/*.log
+    {% elif inventory_hostname in groups['kibana_servers'] %}
+    Name cpu
+    Tag cpu.local
+    {% elif inventory_hostname in groups['wordpress_servers'] %}
+    Name tail
+    Path /var/log/nginx/{{ inventory_hostname }}.{{ chosen_domain }}/*.log, /var/log/zabbix/zabbix-agent/*.log
+    {% endif %}
+    Buffer_Chunk_Size 5M
+    Buffer_Max_Size   10M
+    Mem_Buf_Limit     8M
+    Skip_Long_Lines   On
+    Refresh_Interval  10
+
+[OUTPUT]
+    Name  es
+    Generate_ID On
+    Match *
+    Host {{ hostvars[groups['internal_lbs'][0]].internal_lb_vip }}
+    Port 9200
+    {% if inventory_hostname in groups['galera_servers'] %}
+    Index galera-log
+    Type log_metrics
+    {% elif inventory_hostname in groups['zabbix_servers'] %}
+    Index zabbix-log
+    Type log_metrics
+    {% elif inventory_hostname in groups['wordpress_servers'] %}
+    Index wordpress-log
+    {% elif inventory_hostname in groups['kibana_servers'] %}
+    Index cpu-log
+    {% endif %}
+    Retry_Limit False
+    replace_dots on

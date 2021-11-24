@@ -1,0 +1,9 @@
+elastic_key: https://artifacts.elastic.co/GPG-KEY-elasticsearch
+elastic_repo: "deb https://artifacts.elastic.co/packages/6.x/apt stable main"
+elastic_repo_file: /etc/apt/sources.list.d/elastic-6.x.list
+elastic_deps: 
+  - apt-transport-https 
+  - wget 
+  - gnupg 
+  - ntpdate 
+  - default-jre

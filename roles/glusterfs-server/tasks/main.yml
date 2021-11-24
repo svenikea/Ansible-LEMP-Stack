@@ -1,0 +1,59 @@
+- name: GlusterFS Server setup
+  become: yes
+  block:
+    - name: Installing GlusterFS Server
+      apt: 
+        name: glusterfs-server
+        state: present
+      
+    - name: Setup Gluster /etc/hosts
+      blockinfile:
+        path: /etc/hosts
+        block: |
+          {% for item in groups['glusterfs_servers'] %}
+          {{ hostvars[item].ansible_host }} {{ item }}
+          {% endfor %}
+      
+    - name: Create Brick
+      file:
+        path: "{{ item.brick }}"
+        state: directory
+        owner: root
+        group: root
+        mode: "{{ item.mode }}"
+      loop: "{{ glusterfs_info }}"
+      notify: Start GlusterFS Service
+
+    - name: Gluster Initilization
+      block:
+        - name: Probe Gluster Nodes
+          gluster_peer:
+            state: present
+            nodes:
+              - "{{ groups['glusterfs_servers'][1] }}"
+              - "{{ groups['glusterfs_servers'][2] }}"
+
+        - name: Create GlusterFS Volume on
+          gluster_volume:
+            state: present
+            name: "{{ item.volume }}"
+            replicas: "3"
+            cluster:
+              - "{{ groups['glusterfs_servers'][0] }}"
+              - "{{ groups['glusterfs_servers'][1] }}"
+              - "{{ groups['glusterfs_servers'][2] }}"  
+            transport: tcp
+            bricks: "{{ item.brick }}"
+            force: yes
+          loop: "{{ glusterfs_info }}"
+
+        - name: Start Volume
+          gluster_volume:
+            state: started
+            name: "{{ item.volume }}"
+          loop: "{{ glusterfs_info }}"
+          
+      when: inventory_hostname in groups['glusterfs_servers'][0]
+
+  
+

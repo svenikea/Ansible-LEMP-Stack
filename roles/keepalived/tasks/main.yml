@@ -1,0 +1,38 @@
+- name: Keepalived Role
+  become: yes
+  block:
+    - name: Installing Keepalived
+      apt:
+        name: keepalived
+        state: present
+    
+    - name: Bind Virtual IP To The Shared IP Dddress
+      sysctl:
+        name: net.ipv4.ip_nonlocal_bind
+        state: present
+        sysctl_set: yes
+        value: "1"
+        reload: yes
+
+    - name: Create Script Folder
+      file:
+        state: directory
+        path: /etc/keepalived/scripts
+        mode: "755"
+        owner: root
+        group: root
+
+    - name: Keepalived Config
+      template:
+        src: keepalived.j2
+        dest: /etc/keepalived/keepalived.conf
+        owner: root
+        group: root
+        mode: "644"
+      notify: Restart Keepalived
+
+    
+
+
+    
+

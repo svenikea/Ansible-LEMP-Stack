@@ -1,4 +1,4 @@
-- name: Restart Nginx Config
+- name: Restart Nginx Service
   service:
     name: nginx
     state: restarted

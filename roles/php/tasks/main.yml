@@ -1,113 +1,38 @@
 - name: PHP Role
-  become: yes 
+  become: yes
   block:
-    - name: CentOS/RedHat System
-      block:
-        - name: Installing PHP repo
-          yum:
-            name: "{{ php_repo }}"
-            state: present
-        
-        - name: Installing PHP Modules
-          yum:
-            name: "{{ item }}"
-            state: present
-            enablerepo: remi-php74
-        
-        - name: CentOS PHP-FPM Pre-Config
-          lineinfile:
-            path: /etc/php-fpm.d/www.conf
-            regexp: "{{ item.regexp }}"
-            line: "{{ item.line }}"
-            state: present
-          with_items:
-          - { regexp: "user = apache", line: "user = nginx"}
-          - { regexp: "group = apache", line: "group = nginx"}
-          - { regexp: "listen = 127.0.0.1:9000", line: "listen = /run/php-fpm/www.sock"}
-          - { regexp: ";listen.owner = nobody", line: "listen.owner = nginx"}
-          - { regexp: ";listen.group = nobody", line: "listen.group = nginx"}
+    - name: Adding ondrej/php PPA
+      apt_repository:
+        repo: ppa:ondrej/php
 
-        - name: Change /var/lib/php Ownership
-          file:
-            path: /var/lib/php
-            owner: root
-            group: nginx
-            state: directory
-            recurse: yes
+    - name: Update Cache
+      apt:
+        update_cache: yes
 
-        - name: Change PHP-FPM Upload Size
-          lineinfile:
-            path: /etc/php.ini
-            regexp: "{{ item.regexp }}"
-            line: "{{ item.line }}"
-            state: present
-          with_items:
-            - { regexp : "post_max_size =", line : "post_max_size = {{ body_size }}" }
-            - { regexp : "upload_max_filesize =", line : "upload_max_filesize = {{ body_size }}" }
-          notify: Starting CentOS PHP-FPM Service
-        
-      when: ansible_distribution == "CentOS"
+    - name: Installing WordPress PHP Dependencies
+      apt: 
+        name: "{{ php_version ~ item }}"
+        state: present
+      loop: "{{ php_packages }}"
+      when: inventory_hostname in groups['wordpress_servers']
 
-    - name: Debian/Ubuntu System
-      block:
-        - name: Ubuntu System
-          block:
-            - name: Installing PHP repo
-              apt_repository:
-                repo: ppa:ondrej/php
-
-            - name: Installing PHP Modules
-              apt:
-                name: "{{ dep_php }}"
-                state: present
-            
-          when: ansible_distribution == "Ubuntu"
-
-        - name: Change PHP-FPM Upload Size
-          lineinfile:
-            path: /etc/php/7.4/fpm/php.ini
-            regexp: "{{ item.regexp }}"
-            line: "{{ item.line }}"
-          with_items:
-            - { regexp : "post_max_size =", line : "post_max_size = {{ body_size }}" }
-            - { regexp : "upload_max_filesize =", line : "upload_max_filesize = {{ body_size }}" }
-        
-        - name: Starting PHP-FPM Service
-          service:
-            name: php7.4-fpm
-            state: restarted
-            
-      when: ansible_distribution == "Ubuntu" or ansible_distribution == "Debian"
-
-
-- name: Installing Debian and Ubuntu PHP modules
-  apt: 
-    name: "{{ item }}"
-    state: "present"
-  loop: "{{ deb_php }}"
-  when: ansible_distribution == "Ubuntu" or ansible_distribution == "Debian"
-
-- name: PHP-FPM
-  block:
-    - name: Starting Ubuntu PHP-FPM Service
-      service:
-        name: php7.2-fpm
-        state: started
-      when: ansible_distribution == "Ubuntu"
+    - name: Installing Zabbix PHP modules
+      apt:
+        name: "{{ php_version ~ item }}"
+        state: present
+      loop: "{{ zabbix_php_packages }}"
+      when: inventory_hostname in groups['zabbix_servers']
+      
     - name: Change PHP-FPM Upload Size
-      lineinfile:
-        path: /etc/php/7.2/fpm/php.ini
-        regexp: "{{ item.regexp }}"
-        line: "{{ item.line }}"
-        state: "present"
-      with_items:
-        - { "regexp" : "post_max_size =", "line" : "post_max_size = {{ body_size }}" }
-        - { "regexp" : "upload_max_filesize =", "line" : "upload_max_filesize = {{ body_size }}" }
+      lineinfile:  
+        path: /etc/php/{{ version_number }}/fpm/php.ini
+        regexp: "{{ item.replace }}"
+        line: "{{ item.with }}"
+        state: present
+      loop:
+        - { replace : "post_max_size =", with : "post_max_size = 100M" }
+        - { replace : "upload_max_filesize =", with : "upload_max_filesize = 100M" }
+        - { replace : "max_input_time =", with : "max_input_time = 300" }
+        - { replace : "max_execution_time =", with : "max_execution_time = 300" }
       notify: Restart PHP-FPM Service
-      when: ansible_distribution == "Ubuntu"
-    - name: Starting Debian PHP-FPM Service
-      service:
-        name: php7.0-fpm
-        tate: started
-      when: ansible_distribution == "Debian"
-  
+

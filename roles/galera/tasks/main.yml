@@ -1,0 +1,127 @@
+- name: Galera Setup 
+  become: yes
+  block:
+    - name: Adding the Key
+      apt_key:
+        keyserver: keyserver.ubuntu.com
+        id: "{{ mysql_key_id }}"
+
+    - name: Adding Repository
+      apt_repository:
+        repo: "{{ item }}"
+      loop: "{{ galera_url }}"
+
+    - name: Adding Prefered Package
+      copy:
+        dest: /etc/apt/preferences.d/galera.pref
+        mode: "744"
+        content: |
+          Package: *
+          Pin: origin releases.galeracluster.com
+          Pin-Priority: 1001
+        
+    - name: Disable MySQL AppArmor Rule 
+      file:
+        state: link
+        src: /etc/apparmor.d/usr.sbin.mysqld
+        dest: /etc/apparmor.d/disable/usr.sbin.mysqld 
+        force: yes
+      notify: Restart AppArmor
+        
+    - name: Installing MySQL
+      apt:
+        name: "{{ item }}"
+        state: present
+        update_cache: yes
+      loop: "{{ galera_deps }}"
+
+    - name: "Galera Config"
+      template:
+        src: galera_conf.j2
+        dest: /etc/mysql/conf.d/galera.cnf
+        owner: mysql
+        group: mysql
+        mode: "755"
+
+    - name: Zabbix Credential Directory
+      file:
+        state: directory
+        mode: "644"
+        owner: root
+        group: root
+        dest: /var/lib/zabbix
+        
+    - name: Zabbix MySQL Credential File
+      copy:
+        dest: /var/lib/zabbix/.my.cnf
+        content: |
+          [client]
+          user=root
+          password={{ mysql_root_password }}
+        owner: root
+        group: root
+        mode: "755"
+        
+    - name: Zabbix Environment to Galera
+      blockinfile:
+        path: /etc/mysql/mysql.conf.d/mysqld.cnf
+        state: present
+        insertafter: "symbolic-links=0"
+        block: |
+          [client]
+          user=root
+          password={{ mysql_root_password }}
+      notify: Stop Galera Nodes
+
+    - name: Run Startup Script
+      shell: /usr/bin/mysqld_bootstrap
+      when: inventory_hostname in groups['galera_servers'][0]
+      notify: Start Mysql nodes
+
+  when: inventory_hostname in groups['galera_servers']
+
+
+- name: Galera initalizaiton
+  block:
+    - name: Change root password
+      mysql_user: 
+        name: root
+        host: '{{ item }}'
+        check_implicit_admin: yes
+        login_user: root
+        login_password: '{{ mysql_root_password }}'
+        password: '{{ mysql_root_password }}'
+        priv: '*.*:ALL,GRANT'
+        state: present
+        update_password: always
+      loop:
+          - "{{ hostvars[groups['galera_servers'][0]].ansible_host }}"
+          - "localhost"
+          - "{{ hostvars[groups['internal_lbs'][0]].ansible_host }}"
+
+    - name: Create Database
+      mysql_db:
+        name: "{{ wordpress_database }}"
+        state: present
+        encoding: utf8
+        collation: utf8_bin
+        login_user: root
+        login_password: '{{ mysql_root_password }}'
+
+    - name: Create User
+      mysql_user:
+        name: '{{ item.user }}'
+        host: "%"
+        password: '{{  item.password }}'
+        state: present
+        login_host: "{{ hostvars[groups['galera_servers'][0]].ansible_host }}"
+        login_user: root
+        login_password: '{{ mysql_root_password }}'
+        priv: '{{ item.data }}.*:ALL,GRANT'
+      with_items:
+        - { user: "{{ wordpress_user }}", password: "{{ wordpress_password }}", admin: "yes", data: "{{ wordpress_database }}" }
+        - { user: "{{ haproxy_user }}", password: "", admin: "yes", data: "*" }
+
+  when: inventory_hostname in groups['galera_servers'][0]
+
+

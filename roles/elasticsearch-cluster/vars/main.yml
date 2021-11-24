@@ -1,0 +1,4 @@
+cluster_name: "es-cluster"
+node1_name: "node-1" 
+node2_name: "node-2" 
+node3_name: "node-3" 

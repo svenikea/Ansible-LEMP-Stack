@@ -1,0 +1,17 @@
+glusterfs_vip_name: "glustervip"
+role_loop:
+  - galera
+  - haproxy
+  - haproxy
+  - zabbix-monitor
+  - elastic-cluster
+  - kibana
+  - wordpress
+group_loop:
+  - galera_servers
+  - internal_lbs
+  - external_lbs
+  - zabbix_servers
+  - elastic_servers
+  - zabbix_servers
+  - wordpress_servers

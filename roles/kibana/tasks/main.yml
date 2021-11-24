@@ -1,0 +1,25 @@
+- name: Kibana Role
+  become: yes
+  block:
+    - name: Installing kibana
+      apt:
+        name: kibana
+        state: present
+
+    - name: Kibana Config
+      template:
+        src: kibana.j2
+        dest: /etc/kibana/kibana.yml
+        mode: "644"
+        owner: root
+        group: root
+      notify: Restart Kibana Service
+
+      
+    
+
+
+
+
+
+

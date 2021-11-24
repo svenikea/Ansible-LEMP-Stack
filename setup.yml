@@ -1,17 +1,87 @@
-# vm.yaml
----
-- hosts: test
-  become: yes
-  vars_files:
-    - "group_vars/main.yml"
+- hosts: glusterfs_servers
   roles:
-    - base
-    - common
+    - glusterfs-server
+    - zabbix-setup
+    - zabbix-server
+    - zabbix-agent
+    - keepalived
+    - fluent-bit
+
+- hosts: elastic_servers
+  roles:
+    - glusterfs-client
+    - elasticsearch-setup
+    - elasticsearch-cluster
+    - zabbix-setup
+    - zabbix-agent
+
+- hosts: galera_servers
+  roles:
+    - glusterfs-client
+    - zabbix-setup
+    - zabbix-agent
+    - galera
+    - keepalived
+    - fluent-bit
+
+- hosts: wordpress_servers
+  roles:
+    - glusterfs-client
     - nginx
-    - ssl
     - php
-    - mysql
+    - zabbix-setup
+    - zabbix-agent
     - wordpress
+    - keepalived
+    - fluent-bit
+
+- hosts: zabbix_servers
+  roles:
+    - glusterfs-client
+    - nginx
+    - php
+    - zabbix-setup
+    - zabbix-server
+    - zabbix-agent
+    - fluent-bit
+
+- hosts: kibana_servers
+  roles:
+    - glusterfs-client
+    - elasticsearch-setup
+    - zabbix-setup
+    - zabbix-agent
+    - nginx
+    - keepalived
+
+- hosts: bastion_servers
+  roles:
+    - glusterfs-client
+    - zabbix-setup
+    - zabbix-agent
+    - fluent-bit
+
+- hosts: internal_lbs
+  roles:
+    - glusterfs-client
+    - zabbix-setup
+    - zabbix-agent
+    - openssl
+    - haproxy
+    - keepalived
+    - fluent-bit
+
+- hosts: external_lbs
+  roles:
+    - glusterfs-client
+    - zabbix-setup
+    - zabbix-agent
+    - openssl
+    - haproxy
+    - keepalived
+    - fluent-bit
+
+
 
       
 

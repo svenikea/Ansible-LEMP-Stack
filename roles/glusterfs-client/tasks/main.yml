@@ -1,0 +1,35 @@
+- name: GlusterFS Client Setup
+  become: yes
+  block:
+    - name: Setup Gluster /etc/hosts
+      blockinfile:
+        path: /etc/hosts
+        block: |
+          {% for item in groups['glusterfs_servers'] %}
+          {{ hostvars[item].ansible_host }} {{ item }}
+          {% endfor %}
+          {{ hostvars[groups['glusterfs_servers'][0]].glusterfs_vip }} {{ glusterfs_vip_name }}
+
+    - name: Installing GlusterFS Client
+      apt:
+        name: glusterfs-client
+        state: present
+
+    - name: Mounting Volumes
+      block:
+        - name: Get Facts Matching Condition
+          set_fact:
+            vars_volume: "{{ glusterfs_info | selectattr('role', 'equalto', item.0) | map(attribute='volume') }}"
+            vars_path: "{{ glusterfs_info | selectattr('role', 'equalto', item.0) | map(attribute='path') }}"
+          when: inventory_hostname in groups[item.1]
+          loop: "{{ role_loop | zip(group_loop) | list }}"
+
+        - name: Mount Role
+          mount:
+            path: "{{ item.0 }}"
+            src: "{{ glusterfs_ip }}:/{{ item.1 }}"
+            fstype: glusterfs
+            state: mounted
+          loop: "{{ vars_path | zip(vars_volume) | list  }}"
+
+

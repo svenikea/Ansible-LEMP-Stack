@@ -1,0 +1,125 @@
+#jinja2: lstrip_blocks: True, trim_blocks: True
+{% if inventory_hostname in groups['internal_lbs'] %}
+vrrp_script haproxy {          
+    script "killall -0 haproxy"    
+    interval 2                     
+    weight 2                    
+}
+vrrp_instance int-haproxy {
+    {% if inventory_hostname in groups['internal_lb'][0] %}
+    state MASTER 
+    virtual_router_id 22
+    priority 100
+    {% else %}
+    state BACKUP
+    virtual_router_id 33
+    priority 200
+    {% endif %}
+    interface eth0
+    authentication {
+        auth_type PASS
+        auth_pass {{ haproxy_user }}
+    }
+    virtual_ipaddress {
+        {{ internal_lb_vip }}/24
+    }
+    track_script {
+        haproxy
+    }
+    }
+{% endif %}
+{% if inventory_hostname in groups['external_lbs'] %}
+vrrp_script haproxy {          
+    script "killall -0 haproxy"    
+    interval 2                     
+    weight 2                    
+}
+vrrp_instance int-haproxy {
+    {% if inventory_hostname in groups['external_lbs'][0] %}
+    state MASTER 
+    virtual_router_id 22
+    priority 100
+    {% else %}
+    state BACKUP
+    virtual_router_id 33
+    priority 200
+    {% endif %}
+    interface eth0
+    authentication {
+        auth_type PASS
+        auth_pass {{ haproxy_user }}
+    }
+    virtual_ipaddress {
+        {{ external_lb_vip }}/24
+    }
+    track_script {
+        haproxy
+    }
+    }
+{% endif %}
+{% if inventory_hostname in groups['galera_servers'] %}
+vrrp_script galera-nodes {
+    script "pidof mysqld"
+    interval 2
+    weight 2
+}
+vrrp_instance galera {
+    {% if inventory_hostname in groups['galera_servers'][0] %}
+    state MASTER 
+    virtual_router_id 55
+    priority 100
+    {% elif inventory_hostname in groups['galera_servers'][1] %}
+    state BACKUP
+    virtual_router_id 66
+    priority 200
+    {% elif inventory_hostname in groups['galera_servers'][2] %}
+    state BACKUP
+    virtual_router_id 77
+    priority 200
+    {% endif %}
+    interface eth0
+    authentication {
+        auth_type PASS
+        auth_pass {{ mysql_root_password }}
+    }
+    virtual_ipaddress {
+        {{ galera_vip }}/24
+    }
+    track_script {
+        galera-nodes
+    }
+}
+{% endif %}
+{% if inventory_hostname in groups['glusterfs_servers'] %}
+vrrp_script glusterfs-servers {
+    script "killall -0 glusterd"
+    interval 2
+    weight 2
+}
+vrrp_instance glusterfs-clusters {
+    {% if inventory_hostname in groups['glusterfs_servers'][0] %}
+    state MASTER
+    virtual_router_id 44
+    priority 100
+    {% elif inventory_hostname in groups['glusterfs_servers'][1] %}
+    state BACKUP
+    virtual_router_id 55
+    priority 200
+    {% elif inventory_hostname in groups['glusterfs_servers'][2] %}
+    state BACKUP
+    virtual_router_id 66
+    priority 300
+    {% endif %}
+    interface eth0
+    authentication {
+        auth_type PASS
+        auth_pass {{ glusterfs_password }}
+    }
+    virtual_ipaddress {
+        {{ glusterfs_vip }}/24
+    }
+    track_script {
+        glusterfs-servers
+    }
+}
+{% endif %}

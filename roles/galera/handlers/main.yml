@@ -1,0 +1,15 @@
+- name: Start Mysql nodes
+  service: 
+    state: started 
+    name: mysql
+    enabled: yes
+
+- name: Stop Galera Nodes
+  service: 
+    name: mysql
+    state: stopped 
+
+- name: Restart AppArmor
+  service: 
+    name: apparmor
+    state: restarted

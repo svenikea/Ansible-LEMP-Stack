@@ -1,7 +1,7 @@
 # Deploy LEMP Stack with Ansible Playbooks
 
 ## Introduction
-This is a Wordpress LEMP Stack deployment playbook for use with Ubuntu, Debian and CentOS
+This is a Wordpress LEMP Stack deployment playbook
 
 ## Roles Performed 
 

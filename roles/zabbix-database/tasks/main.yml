@@ -1,0 +1,94 @@
+- name: Zabbix Database Role
+  become: yes
+  block:
+    - name: Installing MySQL
+      apt: 
+        name: "{{ item }}"
+        state: present
+      loop:
+        - mysql-server
+        - mysql-client
+
+    - name: Allow remote access to server
+      lineinfile:
+        path: /etc/mysql/mysql.conf.d/mysqld.cnf
+        regex: "127.0.0.1"
+        line: "bind-address=0.0.0.0"
+        state: present
+
+    - name: Zabbix Credential Directory
+      file:
+        state: directory
+        mode: "644"
+        owner: root
+        group: root
+        dest: /var/lib/zabbix
+
+    - name: Zabbix Galera Credential File 
+      copy:
+        dest: /var/lib/zabbix/.my.cnf
+        content: |
+          [client]
+          user={{ zabbix_user }}
+          password={{ zabbix_password }}
+        owner: root
+        group: root
+        mode: "755"
+
+    - name: Zabbix Environment 
+      blockinfile:
+        path: /etc/mysql/mysql.conf.d/mysqld.cnf
+        state: present
+        insertafter: "symbolic-links=0"
+        block: |
+          [client]
+          user={{ zabbix_user }}
+          password={{ zabbix_password }}
+
+    - name: Change root password
+      mysql_user: 
+        name: root
+        host: "{{ item }}"
+        check_implicit_admin: yes
+        login_user: root
+        login_password: '{{ mysql_root_password }}'
+        password: '{{ mysql_root_password }}'
+        priv: '*.*:ALL,GRANT'
+        state: present
+        update_password: always
+      with_items:
+          - "{{ ansible_host }}"
+          - "localhost"
+
+    - name: Create Zabbix Database
+      mysql_db:
+        name: "{{ zabbix_database }}"
+        state: present
+        encoding: utf8
+        collation: utf8_bin
+        login_user: root
+        login_password: "{{ mysql_root_password }}"
+
+    - name: Create Zabbix User
+      mysql_user:
+        name: '{{ zabbix_user }}'
+        host: "%"
+        password: '{{  zabbix_password }}'
+        state: present
+        login_user: root
+        login_password: '{{ mysql_root_password }}'
+        priv: '{{ zabbix_database }}.*:ALL,GRANT'
+
+
+    - name: "Import Zabbix Database template to {{ zabbix_database }}"
+      mysql_db:
+        state: import
+        name: "{{ zabbix_database }}"
+        login_user: "{{ zabbix_user }}"
+        login_password: "{{ zabbix_password }}"
+        target: "/opt/{{ zabbix_tarfile }}/database/mysql/{{ item }}"
+      with_items:
+        - schema.sql
+        - images.sql
+        - data.sql
+      notify: Restart MySQL Server

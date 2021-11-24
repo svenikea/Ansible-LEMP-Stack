@@ -1,0 +1,5 @@
+- name: RestartElasticsearch Cluster
+  service:
+    name : elasticsearch 
+    state: restarted
+    enabled: yes

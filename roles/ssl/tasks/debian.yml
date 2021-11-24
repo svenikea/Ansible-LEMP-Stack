@@ -1,9 +1,0 @@
-- name: Install python cryptography
-  become: yes
-  apt:
-    name: "{{ deb_ssl_deps }}"
-    state: present
-    update_cache: yes
-
-
-

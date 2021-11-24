@@ -1,0 +1,5 @@
+- name: Start Zabbix Server 
+  service:
+    name: zabbix-server
+    state: started
+    enabled: yes

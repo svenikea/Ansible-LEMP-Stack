@@ -1,0 +1,57 @@
+- name: Zabbix Setup Role
+  become: yes
+  block: 
+    - name: Creating zabbix group
+      group:
+        name: zabbix
+        state: present
+        system: yes
+
+    - name: Creating zabbix user
+      user:
+        name: zabbix
+        group: zabbix
+        shell: /bin/false
+        create_home: no
+        state: present
+        system: yes
+
+    - name: Installing Zabbix Dependencies
+      apt:
+        name: "{{ zabbix_packages }}"
+        state: present
+
+    - name: Create {{ zabbix_tarfile }}
+      file:
+        name: /opt/{{ zabbix_tarfile }}
+        state: directory
+        group: ubuntu
+        owner: ubuntu
+        mode: "775"
+
+    - name: Download Zabbix
+      unarchive:
+        src: "{{ url_zabbix_tarball }}"
+        dest: /opt/{{ zabbix_tarfile }}
+        validate_certs: no
+        remote_src: yes
+        extra_opts: [--strip-components=1]
+
+    - name: Create zabbix Server Log
+      file:
+        path: /var/log/zabbix/zabbix-server
+        group: zabbix
+        owner: zabbix
+        mode: "770"
+        state: directory
+      when: inventory_hostname in groups['zabbix_servers']
+
+    - name: Create zabbix Agent Log
+      file:
+        path: /var/log/zabbix/zabbix-agent
+        group: zabbix
+        owner: zabbix
+        mode: "770"
+        state: directory
+
+    

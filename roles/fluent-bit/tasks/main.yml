@@ -1,0 +1,31 @@
+- name: Fluent Bit SRole
+  become: yes
+  block:
+    - name: Adding Server GPG key
+      apt_key:
+        url: "{{ fluent_bit_key }}"
+    
+    - name: Adding Fluent Bit repo
+      lineinfile:
+        path: /etc/apt/sources.list 
+        line: "{{ fluent_bit_repo }}"
+        state: present
+    
+    - name: Updating Repo
+      apt:
+        update_cache: yes
+    
+    - name: Installing Fluent Bit
+      apt:
+        name: td-agent-bit
+        state: present
+    
+    - name: Fluent Bit Config
+      template:
+        src: td-agent-bit.j2
+        dest: /etc/td-agent-bit/td-agent-bit.conf
+        owner: root
+        group: root
+        mode: "644"
+      notify: Restart Fluent Bit Service
+

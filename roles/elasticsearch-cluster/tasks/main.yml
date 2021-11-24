@@ -1,0 +1,37 @@
+- name: Elasticsearch Cluster Role
+  become: yes
+  block:
+    - name: Install ElasticSearch
+      apt:
+        name: elasticsearch
+        state: present
+
+    - name: ElasticSearch Cluster Config
+      template:
+        src: cluster.j2
+        dest: /etc/elasticsearch/elasticsearch.yml
+        owner: root
+        group: elasticsearch
+        mode: "666"
+
+    - name: ElasticSearch Cluster Service
+      template:
+        src: cluster_service.j2
+        dest: /etc/default/elasticsearch
+        owner: root
+        group: elasticsearch
+        mode: "666"
+      notify: Restart Elasticsearch Cluster
+      
+    - name: Setup /etc/hosts
+      blockinfile:
+        path: /etc/hosts
+        block: |
+          {% for item in groups['elastic-cluster'] %}
+          {{ hostvars[item].ansible_host }} {{ item }}
+          {% endfor %}
+
+
+
+
+

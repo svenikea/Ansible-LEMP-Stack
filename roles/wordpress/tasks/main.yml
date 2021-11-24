@@ -1,31 +1,42 @@
-- include: debian.yml
-  when: ansible_os_family == "Debian"
-
-- include: redhat.yml
-  when: ansible_os_family == "RedHat"
-
-- name: Wordpress Role 
+- name: Wordpress Role
   become: yes
   block:
+    - name: Download and Unpack WordPress
+      unarchive:
+        src: "{{ url_wordpress_tarball }}"
+        dest: /var/www/{{ inventory_hostname }}.{{ chosen_domain }}
+        validate_certs: no
+        remote_src: yes
+        owner: www-data
+        group: www-data
+        mode: "755"
+        extra_opts: [--strip-components=1]
+
+    - name: WordPress Config
+      template:
+        src: wp-config.j2
+        dest: /var/www/{{ inventory_hostname }}.{{ chosen_domain }}/wp-config.php
+        owner: www-data
+        group: www-data
+        mode: "755"
+
     - name: Get API Information For wp-config
       no_log: True
       uri:
-        url: "https://api.wordpress.org/secret-key/1.1/salt/"
+        url: "{{ url_wordpress_saltkey }}"
         return_content: True
         method: GET
       register: key_info
-      
+
     - name: Insert Unique Keys and Salts In wp-config
       lineinfile:
-        path: /var/www/{{ inventory_hostname }}/wp-config.php
+        path: /var/www/{{ inventory_hostname }}.{{ chosen_domain }}/wp-config.php
         regex: "put your unique phrase here"
         insertafter: "put your unique phrase here"
         line: "{{ key_info.content }}"
 
     - name: Remove Default Keys and Salts In wp-config
       lineinfile:
-        path: /var/www/{{ inventory_hostname }}/wp-config.php
+        path: var/www/{{ inventory_hostname }}.{{ chosen_domain }}/wp-config.php
         regex: "put your unique phrase here"
         state: "absent"
-
-

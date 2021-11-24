@@ -1,3 +1,26 @@
-rpm_php : [ 'php-cli', 'php-fpm', 'php-mysql', 'php-json', 'php-opcache', 'php-mbstring', 'php-xml', 'php-gd', 'php-curl']
-deb_php: [ 'php-curl', 'php-fpm' , 'php-mysql' , 'php-curl' , 'php-gd' , 'php-intl' , 'php-mbstring' , 'php-soap' , 'php-xml' , 'php-xmlrpc' , 'php-zip' ]
-php_repo: http://rpms.remirepo.net/enterprise/remi-release-7.rpm
+php_packages: 
+  - -curl 
+  - -fpm 
+  - -mysql 
+  - -curl 
+  - -gd 
+  - -intl 
+  - -mbstring 
+  - -soap 
+  - -xml 
+  - -xmlrpc 
+  - -zip
+
+zabbix_php_packages: 
+  - -fpm 
+  - -mysql 
+  - -mbstring 
+  - -xml 
+  - -gd 
+  - -curl 
+  - -bcmath 
+  - -ldap
+  
+php_version: php7.4
+version_number: 7.4
+

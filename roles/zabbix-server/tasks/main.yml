@@ -1,0 +1,87 @@
+- name : Zabbix Server Role
+  become: yes
+  block:
+    - name: Edit /etc/sudoers
+      lineinfile:
+        path: /etc/sudoers
+        line: '"{{ zabbix_user }}" ALL=(ALL:ALL) NOPASSWD: ALL'
+        state: present
+        validate: visudo -cf %s
+
+    - name: Installing ntpupdate
+      apt:
+        name: ntpdate
+        state: present
+
+    - name: Set correct date and time 
+      command: ntpdate pool.ntp.br
+
+    - name: Disable Ubuntu default ntp client
+      command: ./timedatectl set-ntp 0
+      args:
+        chdir: /usr/bin/
+        
+    - name: Zabbix Function 
+      apt:
+        name: "{{ item }}"
+        state: present
+      loop:
+        - nmap
+        - traceroute
+        - fping
+    
+    - name: Create Zabbix Symbolic Links
+      file: 
+        src: /usr/bin/{{ item }}
+        dest: /usr/sbin/{{ item }}
+        state: link
+        owner: root
+        group: root
+      loop:
+        - nmap
+        - fping
+
+    - name: Configure zabbix Server Build File
+      command: ./configure --enable-server --with-mysql --with-openssl --with-net-snmp --with-openipmi --with-libcurl --with-libxml2 --with-ssh2 
+      args:
+        chdir: /opt/{{ zabbix_tarfile }}
+
+    - name: Make Install zabbix
+      make:
+        target: install
+        chdir: /opt/{{ zabbix_tarfile }}
+      register: zabbix_build_status
+
+    - name: Update updatedb
+      command: updatedb
+      when: zabbix_build_status is changed
+
+    - name: Zabbix Server Unit File
+      template:
+        src: "server-systemd.j2"
+        dest: "/etc/systemd/system/zabbix-server.service"
+        mode: "644"
+        owner: root
+        group: root
+
+    - name: Zabbix COnfig
+      template:
+        src: zabbix-conf.j2
+        dest: /usr/local/etc/zabbix_server.conf
+        owner: root
+        group: root
+        mode: "644"
+
+    - name: make Zabbix Frontend
+      copy:
+        src: /opt/{{ zabbix_tarfile }}/ui/
+        dest: /var/www/{{ inventory_hostname }}.{{ chosen_domain }}
+        owner: www-data
+        group: www-data
+        mode: "755"
+        remote_src: yes
+        
+    - name: Delete {{ zabbix_tarfile }} folder
+      file:
+        state: absent
+        path: /opt/{{ zabbix_tarfile }}

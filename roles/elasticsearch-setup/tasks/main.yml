@@ -1,0 +1,43 @@
+- name: Elasticsearch Setup Role
+  become: yes
+  block:
+    - name: Installing Dependencies
+      apt:
+        name: "{{ elastic_deps }}"
+        state: present
+
+    - name: Add Elastic’s signing key
+      apt_key:
+        url: "{{ elastic_key }}"
+        state: present
+
+    - name: Added Elastic repo
+      copy:
+        dest: "{{ elastic_repo_file }}"
+        owner: root
+        group: root
+        mode: "644"
+        content: "{{ elastic_repo }}"
+
+    - name: Update cache
+      apt:
+        update_cache: yes
+
+    - name: Setup /etc/hosts for kibana
+      blockinfile:
+        path: /etc/hosts
+        block: |
+          {% for item in groups['elastic_servers'] %}
+          {{ hostvars[item].ansible_host }} {{ item }}
+          {% endfor %}
+          {{ ansible_host }} {{ inventory_hostname }} 
+      when: inventory_hostname in groups['kibana_servers']
+
+    - name: Setup /etc/hosts for elastic
+      blockinfile:
+        path: /etc/hosts
+        block: |
+          {% for item in groups['elastic_servers'] %}
+          {{ hostvars[item].ansible_host }} {{ item }}
+          {% endfor %}
+      when: inventory_hostname in groups['elastic_servers']

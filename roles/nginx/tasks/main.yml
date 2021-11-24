@@ -1,65 +1,46 @@
-- include: debian.yml
-  when: ansible_os_family == "Debian"
-
-- include: redhat.yml
-  when: ansible_os_family == "RedHat"
-
-- name: Nginx Setup
+- name: Nginx Role
   become: yes
   block:
-    - name: Creating nginxconfig.io Directory
-      file:
-        state: directory 
-        owner: root
-        group: root
-        mode: "744"
-        dest: /etc/nginx/nginxconfig.io
+    - name: Installing Nginx
+      apt:
+        name: nginx
+        state: present
 
-    - name: Copying General Required Config File
+    - name: Main Nginx Config
       template:
-        src: "{{ item.source }}"
-        dest: "{{ item.path }}"
-        owner: root
-        group: root
-        mode: '644'
-      loop:
-        - { path: "/etc/nginx/conf.d/{{ inventory_hostname }}.conf", source: "website.j2" }
-        - { path: "/etc/nginx/conf.d/nginx.conf", source: "nginx.j2" }
-        - { path: "/etc/nginx/nginxconfig.io/security.conf", source: "security.j2" }
-        - { path: "/etc/nginx/nginxconfig.io/general.conf", source: "general.j2" }
-
-    - name: Copying Webserver's Specific Config File
-      template: 
-        src: "{{ item.source }}"
-        dest: "{{ item.path }}"
+        src: nginx.j2
+        dest: /etc/nginx/nginx.conf
         owner: root
         group: root
         mode: "644"
-      loop: 
-        - { path: "/etc/nginx/nginxconfig.io/php_fastcgi.conf", source: "php_fastcgi.j2" }
-        - { path: "/etc/nginx/nginxconfig.io/wordpress.conf", source: "wordpress.j2" }
-      when: inventory_hostname in groups['wordpress_servers']
 
-    - name: Copying Zabbix's Specific Config File
-      template: 
-        src: php_fastcgi.j2
-        dest: /etc/nginx/nginxconfig.io/php_fastcgi.conf
-        owner: root
-        group: root
-        mode: "644"
-      when: inventory_hostname in groups['zabbix_servers']
-
-    - name: Copying Kibana's Specific Config File
-      template: 
-        src: proxy.j2
-        dest: /etc/nginx/nginxconfig.io/proxy.conf
-        owner: root
-        group: root
-        mode: "644"
-      when: inventory_hostname in groups['kibana_servers']
-
-    - name: Delete Default webspage
+    - name: Remove The Defaut Website
       file:
         path: /etc/nginx/sites-enabled/default
-        state: "absent"
-      notify: Restart Nginx Config
+        state: absent
+
+    - name: "{{ inventory_hostname }}.{{ chosen_domain }} Web Location"
+      file:
+        path: /var/www/{{ inventory_hostname }}.{{ chosen_domain }}
+        state: directory
+        owner: www-data 
+        group: www-data 
+        mode: "755"
+
+    - name: "Copying {{ inventory_hostname }}.{{ chosen_domain }} config"
+      template: 
+        src: website.j2
+        dest: /etc/nginx/conf.d/{{ inventory_hostname }}.conf
+        owner: root
+        group: root
+        mode: "644"
+
+    - name: "Creating {{ inventory_hostname }}.{{ chosen_domain }} Log"
+      file: 
+        path : /var/log/nginx/{{ inventory_hostname }}.{{ chosen_domain }}
+        state: directory
+        owner: root
+        group: root
+        mode: "640"
+    - notify: Restart Nginx Service
+

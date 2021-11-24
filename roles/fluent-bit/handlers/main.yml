@@ -1,0 +1,5 @@
+- name: Restart Fluent Bit Service
+  service:
+    name: td-agent-bit
+    state: restarted
+    enabled: yes

@@ -1,0 +1,19 @@
+zabbix_packages: 
+  - python-mysqldb 
+  - python3-mysqldb 
+  - build-essential 
+  - libmysqlclient-dev 
+  - libssl-dev 
+  - libsnmp-dev 
+  - libevent-dev 
+  - libopenipmi-dev 
+  - libcurl4-openssl-dev 
+  - libxml2-dev 
+  - libssh2-1-dev 
+  - libpcre3-dev 
+  - libldap2-dev 
+  - libiksemel-dev 
+  - libcurl4-openssl-dev 
+  - libgnutls28-dev
+  - pkg-config
+

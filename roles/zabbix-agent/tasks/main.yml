@@ -1,0 +1,48 @@
+- name: Zabbix Agent Role
+  become: yes
+  block:
+    - name: Configure zabbix Agent Build File
+      command: ./configure --enable-agent --with-mysql --with-openssl --with-net-snmp --with-openipmi --with-libcurl --with-libxml2 --with-ssh2 
+      args:
+        chdir: /opt/{{ zabbix_tarfile }}
+
+    - name: Make Install zabbix
+      make:
+        target: install
+        chdir: /opt/{{ zabbix_tarfile }}
+      register: zabbix_build_status
+
+    - name: Update updatedb
+      command: updatedb
+      when: zabbix_build_status is changed
+
+    - name: Zabbix Agent Unit File
+      template:
+        src: "agent-systemd.j2"
+        dest: "/etc/systemd/system/zabbix-agent.service"
+        mode: "644"
+        owner: root
+        group: root
+
+    - name: Zabbix COnfig
+      template:
+        src: zabbix_agent.j2
+        dest: /usr/local/etc/zabbix_agentd.conf
+        owner: root
+        group: root
+        mode: "644"
+
+    - name: Zabbix Galera Database Template
+      template:
+        src: mysql_template.j2
+        dest: /usr/local/etc/zabbix_agentd.conf.d/userparameter_mysql.conf
+        owner: root
+        group: root
+        mode: "644"
+      notify: Start Zabbix Agent 
+
+    - name: Delete {{ zabbix_tarfile }} folder
+      file:
+        state: absent
+        path: /opt/{{ zabbix_tarfile }}
+      when: inventory_hostname not in groups['zabbix_servers']
