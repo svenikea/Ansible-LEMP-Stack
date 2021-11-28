@@ -25,7 +25,7 @@
       
     - name: Change PHP-FPM Upload Size
       lineinfile:  
-        path: /etc/php/{{ version_number }}/fpm/php.ini
+        path: /etc/php/{{ php_version[-3:] }}/fpm/php.ini
         regexp: "{{ item.replace }}"
         line: "{{ item.with }}"
         state: present

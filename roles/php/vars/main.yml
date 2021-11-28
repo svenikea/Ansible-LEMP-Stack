@@ -22,5 +22,4 @@ zabbix_php_packages:
   - -ldap
   
 php_version: php7.4
-version_number: 7.4
 

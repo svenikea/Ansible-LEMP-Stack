@@ -16,7 +16,7 @@ glusterfs_password: password
 redis_password: password
 
 
-url_zabbix_tarball: "https://cdn.zabbix.com/zabbix/sources/stable/5.4/zabbix-5.4.5.tar.gz"
+url_zabbix_tarball: "https://cdn.zabbix.com/zabbix/sources/stable/5.4/zabbix-5.4.7.tar.gz"
 zabbix_tarfile:  "{{ url_zabbix_tarball | basename }}"
 
 sub_domain:
