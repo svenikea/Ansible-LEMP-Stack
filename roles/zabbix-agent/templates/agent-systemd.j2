@@ -4,14 +4,10 @@ After=syslog.target
 Documentation=https://www.zabbix.com/documentation/current/manual/concepts/agent
 
 [Service]
-Type=forking
-Restart=on-failure
-KillMode=control-group
-PIDFile=/tmp/zabbix_agentd.pid
+Type=oneshot
 Environment="CONFFILE=/usr/local/etc/zabbix_agentd.conf"
 ExecStart=/usr/local/sbin/zabbix_agentd -c $CONFFILE
-ExecStop=/bin/kill -SIGTERM $MAINPID
-RestartSec=10s
+RemainAfterExit=yes
 User=zabbix
 Group=zabbix
 

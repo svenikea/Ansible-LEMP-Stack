@@ -4,14 +4,10 @@ After=syslog.target
 Documentation=https://www.zabbix.com/documentation/current/
 
 [Service]
-Type=forking
-Restart=on-failure
-KillMode=control-group
-PIDFile=/tmp/zabbix_server.pid
+Type=oneshot
 Environment="CONFFILE=/usr/local/etc/zabbix_server.conf"
 ExecStart=/usr/local/sbin/zabbix_server  -c $CONFFILE
-ExecStop=/bin/kill -SIGTERM $MAINPID
-RestartSec=10s
+RemainAfterExit=yes
 User=zabbix
 Group=zabbix
 
