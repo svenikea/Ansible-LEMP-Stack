@@ -1,17 +1,15 @@
 [Unit]
 Description=Zabbix Server Service
 After=syslog.target
+After=network.target
 Documentation=https://www.zabbix.com/documentation/current/
 
 [Service]
-Type=forking
-Restart=on-failure
-KillMode=control-group
-PIDFile=/tmp/zabbix_server.pid
-Environment="CONFFILE=/usr/local/etc/zabbix_server.conf"
-ExecStart=/usr/local/sbin/zabbix_server  -c $CONFFILE
-ExecStop=/bin/kill -SIGTERM $MAINPID
-RestartSec=10s
+Type=oneshot
+Environment="CONFFILE=/etc/zabbix/zabbix_server.conf"
+ExecStart=/usr/sbin/zabbix_server  -c $CONFFILE
+PIDFile=/run/zabbix_server.pid
+RemainAfterExit=yes
 User=zabbix
 Group=zabbix
 
