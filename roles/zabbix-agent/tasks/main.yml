@@ -24,13 +24,22 @@
         owner: root
         group: root
 
-    - name: Zabbix COnfig
+    - name: Zabbix Config
       template:
         src: zabbix_agent.j2
-        dest: /usr/local/etc/zabbix_agentd.conf
+        dest: /etc/zabbix/zabbix_agentd.conf
         owner: root
         group: root
         mode: "644"
+
+    - name: Change Zabbix Agent Command Path
+      copy:
+        src: /usr/local/sbin/zabbix_agentd
+        dest: /usr/sbin/zabbix_agentd
+        remote_src: yes
+        owner: root
+        group: root
+        mode: "755"
 
     - name: Zabbix Galera Database Template
       template:

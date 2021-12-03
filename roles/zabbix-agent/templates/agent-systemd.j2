@@ -1,12 +1,14 @@
 [Unit]
 Description=Zabbix Agent Service
 After=syslog.target
+After=network.target
 Documentation=https://www.zabbix.com/documentation/current/manual/concepts/agent
 
 [Service]
 Type=oneshot
-Environment="CONFFILE=/usr/local/etc/zabbix_agentd.conf"
-ExecStart=/usr/local/sbin/zabbix_agentd -c $CONFFILE
+Environment="CONFFILE=/etc/zabbix/zabbix_agentd.conf"
+ExecStart=/usr/sbin/zabbix_agentd -c $CONFFILE
+PIDFile=/run/zabbix_agentd.pid
 RemainAfterExit=yes
 User=zabbix
 Group=zabbix
