@@ -41,8 +41,8 @@
         mode: "644"
       notify: Start Zabbix Agent 
 
-    - name: Delete {{ zabbix_tarfile }} folder
-      file:
-        state: absent
-        path: /opt/{{ zabbix_tarfile }}
-      when: inventory_hostname not in groups['zabbix_servers']
+    # - name: Delete {{ zabbix_tarfile }} folder
+    #   file:
+    #     state: absent
+    #     path: /opt/{{ zabbix_tarfile }}
+    #   when: inventory_hostname not in groups['zabbix_servers']

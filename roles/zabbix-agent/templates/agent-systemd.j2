@@ -1,15 +1,26 @@
+#jinja2: lstrip_blocks: True, trim_blocks: True
 [Unit]
 Description=Zabbix Agent Service
 After=syslog.target
 Documentation=https://www.zabbix.com/documentation/current/manual/concepts/agent
 
 [Service]
-Type=oneshot
+Type=forking
+Restart=on-failure
+KillMode=control-group
+PIDFile=/tmp/zabbix_agentd.pid
 Environment="CONFFILE=/usr/local/etc/zabbix_agentd.conf"
 ExecStart=/usr/local/sbin/zabbix_agentd -c $CONFFILE
-RemainAfterExit=yes
+ExecStartPost=/bin/sleep 1
+ExecStop=/bin/kill -SIGTERM $MAINPID
+RestartSec=10s
 User=zabbix
 Group=zabbix
 
 [Install]
 WantedBy=multi-user.target
+
+
+
+
+

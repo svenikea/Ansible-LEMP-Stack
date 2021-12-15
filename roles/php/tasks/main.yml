@@ -29,10 +29,12 @@
         regexp: "{{ item.replace }}"
         line: "{{ item.with }}"
         state: present
-      loop:
-        - { replace : "post_max_size =", with : "post_max_size = 100M" }
-        - { replace : "upload_max_filesize =", with : "upload_max_filesize = 100M" }
-        - { replace : "max_input_time =", with : "max_input_time = 300" }
-        - { replace : "max_execution_time =", with : "max_execution_time = 300" }
       notify: Restart PHP-FPM Service
+      loop:
+        - { replace: 'post_max_size =', with: "post_max_size = 100M" }
+        - { replace: 'upload_max_filesize=', with: "upload_max_filesize = 100M"}
+        - { replace: 'max_input_time =', with: "max_input_time = 300" }
+        - { replace: 'max_execution_time =', with: "max_execution_time = 300" }
+
+
 

@@ -81,7 +81,7 @@
         mode: "755"
         remote_src: yes
         
-    - name: Delete {{ zabbix_tarfile }} folder
-      file:
-        state: absent
-        path: /opt/{{ zabbix_tarfile }}
+    # - name: Delete {{ zabbix_tarfile }} folder
+    #   file:
+    #     state: absent
+    #     path: /opt/{{ zabbix_tarfile }}

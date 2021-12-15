@@ -1,15 +1,24 @@
+#jinja2: lstrip_blocks: True, trim_blocks: True
 [Unit]
 Description=Zabbix Server Service
 After=syslog.target
 Documentation=https://www.zabbix.com/documentation/current/
 
 [Service]
-Type=oneshot
+Type=forking
+Restart=on-failure
+KillMode=control-group
+PIDFile=/tmp/zabbix_server.pid
 Environment="CONFFILE=/usr/local/etc/zabbix_server.conf"
 ExecStart=/usr/local/sbin/zabbix_server  -c $CONFFILE
-RemainAfterExit=yes
+ExecStartPost=/bin/sleep 1
+ExecStop=/bin/kill -SIGTERM $MAINPID
+RestartSec=10s
 User=zabbix
 Group=zabbix
 
 [Install]
 WantedBy=multi-user.target
+
+
+
