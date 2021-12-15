@@ -21,5 +21,5 @@ zabbix_php_packages:
   - -bcmath 
   - -ldap
   
-php_version: php7.4
+
 
