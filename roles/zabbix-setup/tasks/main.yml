@@ -54,4 +54,12 @@
         mode: "770"
         state: directory
 
+    - name: Create Zabbix Config File
+      file:
+        path: /etc/zabbix
+        owner: root
+        group: root
+        mode: "655"
+        state: directory
+
     

@@ -41,9 +41,8 @@
     - nginx
     - php
     - zabbix-setup
-    - zabbix-agent
-    - zabbix-database
     - zabbix-server
+    - zabbix-agent
     - fluent-bit
 
 - hosts: kibana_servers

@@ -64,13 +64,22 @@
         owner: root
         group: root
 
-    - name: Zabbix COnfig
+    - name: Zabbix Config
       template:
         src: zabbix-conf.j2
-        dest: /usr/local/etc/zabbix_server.conf
+        dest: /etc/zabbix/zabbix_server.conf
         owner: root
         group: root
         mode: "644"
+
+    - name: Change Zabbix Server Command Path
+      copy:
+        src: /usr/local/sbin/zabbix_server
+        dest: /usr/sbin/zabbix_server
+        remote_src: yes
+        owner: root
+        group: root
+        mode: "755"
 
     - name: make Zabbix Frontend
       copy:
@@ -81,7 +90,7 @@
         mode: "755"
         remote_src: yes
         
-    # - name: Delete {{ zabbix_tarfile }} folder
-    #   file:
-    #     state: absent
-    #     path: /opt/{{ zabbix_tarfile }}
+    - name: Delete {{ zabbix_tarfile }} folder
+      file:
+        state: absent
+        path: /opt/{{ zabbix_tarfile }}

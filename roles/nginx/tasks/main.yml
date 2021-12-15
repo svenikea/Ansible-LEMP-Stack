@@ -16,11 +16,8 @@
 
     - name: Remove The Defaut Website
       file:
-        path: /etc/nginx/{{ item }}
+        path: /etc/nginx/sites-enabled/default
         state: absent
-      loop: 
-        - "sites-enabled/default"
-        - "sites-available/default"
 
     - name: "{{ inventory_hostname }}.{{ chosen_domain }} Web Location"
       file:
@@ -45,5 +42,5 @@
         owner: root
         group: root
         mode: "640"
-      notify: Restart Nginx Service
+    - notify: Restart Nginx Service
 
