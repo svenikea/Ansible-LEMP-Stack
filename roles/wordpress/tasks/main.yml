@@ -37,6 +37,6 @@
 
     - name: Remove Default Keys and Salts In wp-config
       lineinfile:
-        path: var/www/{{ inventory_hostname }}.{{ chosen_domain }}/wp-config.php
+        path: /var/www/{{ inventory_hostname }}.{{ chosen_domain }}/wp-config.php
         regex: "put your unique phrase here"
         state: "absent"
