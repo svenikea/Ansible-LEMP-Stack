@@ -42,5 +42,5 @@
         owner: root
         group: root
         mode: "640"
-    - notify: Restart Nginx Service
+      notify: Restart Nginx Service
 
